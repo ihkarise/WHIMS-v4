@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E2D5E">
+<title>WHIMS — Wise Homeopathy Inventory</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#2A3C78; --navy-2:#1E2D5E; --navy-soft:#E9EDF7;
+  --red:#C21F35; --red-deep:#8F1626; --red-soft:#FAE7EA;
+  --green:#1E8E5A; --green-soft:#E3F4EC;
+  --amber:#C77700; --amber-deep:#9A5C00; --amber-soft:#FCF1DF;
+  --blue:#2A3C78; --blue-soft:#E9EDF7;
+  --ink:#1C2440; --muted:#5E6786; --line:rgba(42,60,120,.12);
+  --radius:20px; --radius-sm:13px;
+  /* glass tokens */
+  --glass:rgba(255,255,255,.62);
+  --glass-strong:rgba(255,255,255,.78);
+  --glass-border:rgba(255,255,255,.65);
+  --glass-shadow:0 8px 32px rgba(30,45,94,.14);
+  --blur:blur(18px) saturate(1.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);
+  font-size:15px;line-height:1.5;padding-bottom:104px;min-height:100vh;
+  background:#EDF0FA;}
+/* ambient color blobs behind the glass */
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(560px 420px at 88% -6%, rgba(194,31,53,.16), transparent 62%),
+    radial-gradient(700px 540px at -12% 12%, rgba(42,60,120,.20), transparent 60%),
+    radial-gradient(520px 480px at 50% 108%, rgba(30,142,90,.12), transparent 62%),
+    linear-gradient(180deg,#F2F4FC,#E9EDF8)}
+h1,h2,h3,.cap{font-family:'Poppins',sans-serif;text-transform:uppercase;letter-spacing:.04em}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:15px;width:100%;padding:11px 13px;
+  border:1.5px solid var(--line);border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.82);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:0;border-color:var(--navy)}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:12px 0 5px;
+  text-transform:uppercase;letter-spacing:.05em}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---- Glass utility ---- */
+.glass{background:var(--glass);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+@supports not (backdrop-filter:blur(2px)){
+  .glass{background:rgba(255,255,255,.92)}
+}
+
+/* ---- Header ---- */
+header{position:sticky;top:0;z-index:40;color:#fff;
+  padding:14px 18px 12px;display:flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,rgba(42,60,120,.92),rgba(30,45,94,.88));
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border-bottom:1px solid rgba(255,255,255,.18);
+  box-shadow:0 4px 24px rgba(30,45,94,.28)}
+.logo-mark{width:38px;height:38px;border-radius:11px;flex:none;display:block;
+  object-fit:cover;background:#fff;
+  box-shadow:0 4px 12px rgba(30,45,94,.35)}
+header h1{font-size:16px;font-weight:700;line-height:1.15}
+header .sub{font-size:11px;opacity:.78;font-family:'Inter';text-transform:none;letter-spacing:0;font-weight:500}
+#syncDot{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;opacity:.9;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+  padding:5px 11px;border-radius:99px}
+#syncDot i{width:8px;height:8px;border-radius:50%;background:#9AA8B8;display:inline-block}
+#syncDot.on i{background:#4ADE80;box-shadow:0 0 8px rgba(74,222,128,.8)}
+#syncDot.off i{background:#FF6B7E;box-shadow:0 0 8px rgba(255,107,126,.7)}
+
+/* ---- Views ---- */
+main{max-width:760px;margin:0 auto;padding:16px 16px 8px}
+.view{display:none;animation:fade .18s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.view-title{font-size:14px;font-weight:700;color:var(--navy);margin:6px 0 14px;display:flex;align-items:center;gap:8px}
+.view-title::after{content:'';flex:1;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,var(--red),rgba(42,60,120,.18))}
+
+/* ---- Stock alert bar (notification) ---- */
+.alertbar{display:none;width:100%;text-align:left;align-items:center;gap:12px;
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;
+  font-weight:600;font-size:13.5px;color:#fff;position:relative;overflow:hidden;
+  box-shadow:0 10px 28px rgba(143,22,38,.30);transition:transform .12s}
+.alertbar.show{display:flex}
+.alertbar:active{transform:scale(.98)}
+.alertbar .ic{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);font-size:17px}
+.alertbar .tx{flex:1;min-width:0}
+.alertbar .tx b{display:block;font-family:'Poppins';font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.alertbar .tx span{font-size:12px;opacity:.92;font-weight:500}
+.alertbar .go{flex:none;font-size:18px;opacity:.85}
+.alertbar.crit{background:linear-gradient(135deg,var(--red),var(--red-deep))}
+.alertbar.warn{background:linear-gradient(135deg,#D98A00,var(--amber-deep));
+  box-shadow:0 10px 28px rgba(154,92,0,.28)}
+.alertbar.healthy{background:linear-gradient(135deg,#23A56A,#147A4A);
+  box-shadow:0 10px 28px rgba(20,122,74,.25)}
+/* soft ring pattern, echoes the reference card */
+.alertbar::after{content:'';position:absolute;right:-34px;top:-34px;width:120px;height:120px;
+  border-radius:50%;border:14px solid rgba(255,255,255,.10);pointer-events:none}
+.alertbar.pulse .ic{animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}70%{box-shadow:0 0 0 14px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+
+/* ---- Bottle-cap stat tiles ---- */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+@media(min-width:560px){.stats{grid-template-columns:repeat(3,1fr)}}
+.stat{border-radius:var(--radius);padding:0 0 13px;overflow:hidden;text-align:left;transition:transform .12s}
+.stat:active{transform:scale(.97)}
+.stat .capstrip{height:9px;background:var(--navy);margin-bottom:11px}
+.stat.red .capstrip{background:linear-gradient(90deg,var(--red),var(--red-deep))}
+.stat.amber .capstrip{background:linear-gradient(90deg,#E09200,var(--amber))}
+.stat.green .capstrip{background:linear-gradient(90deg,#27B374,var(--green))}
+.stat.blue .capstrip{background:linear-gradient(90deg,#3D54A8,var(--navy))}
+.stat.grey .capstrip{background:#9AA8B8}
+.stat b{display:block;font-family:'Poppins';font-size:26px;font-weight:800;color:var(--navy);
+  padding:0 14px;line-height:1.1}
+.stat.red b{color:var(--red)}
+.stat.amber b{color:var(--amber)}
+.stat span{display:block;font-size:11px;font-weight:600;color:var(--muted);padding:2px 14px 0;
+  text-transform:uppercase;letter-spacing:.06em}
+
+/* ---- Cards & lists ---- */
+.card{border-radius:var(--radius);padding:15px 16px;margin-bottom:11px}
+.card.glass{}
+.med{display:flex;align-items:center;gap:6px;width:100%;border-radius:14px;
+  padding:0 6px 0 10px;border-bottom:1px solid var(--line)}
+.med .medmain{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;
+  padding:11px 0;background:none}
+.med .pot{flex:none;width:46px;height:46px;border-radius:13px;background:rgba(42,60,120,.10);color:var(--navy);
+  display:grid;place-items:center;font-family:'Poppins';font-weight:700;font-size:12px;text-align:center;line-height:1.1;padding:2px;
+  border:1px solid rgba(42,60,120,.12)}
+.med .info{flex:1;min-width:0}
+.med .name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.med .meta{font-size:12px;color:var(--muted);margin-top:1px}
+.med .right{flex:none;text-align:right}
+.med .stockN{font-family:'Poppins';font-weight:700;font-size:17px;color:var(--navy)}
+.med .stockL{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+/* order +/− button on each row */
+.ordbtn{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  font-family:'Poppins';font-weight:800;font-size:17px;line-height:1;transition:transform .1s}
+.ordbtn:active{transform:scale(.9)}
+.ordbtn.add{background:rgba(42,60,120,.10);color:var(--navy);border:1.5px solid rgba(42,60,120,.25)}
+.ordbtn.rm{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;
+  box-shadow:0 4px 10px rgba(194,31,53,.30)}
+.ordbtn[disabled]{opacity:.4}
+
+/* status-coloured rows — the colour IS the signal */
+.med.s-out{background:linear-gradient(90deg,rgba(194,31,53,.14),rgba(194,31,53,.05));
+  border-left:4px solid var(--red)}
+.med.s-out .stockN{color:var(--red)}
+.med.s-out .pot{background:var(--red-soft);color:var(--red);border-color:rgba(194,31,53,.25)}
+.med.s-low{background:linear-gradient(90deg,rgba(199,119,0,.14),rgba(199,119,0,.04));
+  border-left:4px solid var(--amber)}
+.med.s-low .stockN{color:var(--amber)}
+.med.s-low .pot{background:var(--amber-soft);color:var(--amber-deep);border-color:rgba(199,119,0,.25)}
+.med.s-over{border-left:4px solid rgba(42,60,120,.45)}
+.med.s-over .stockN{color:var(--navy)}
+.med.s-arch{opacity:.55}
+
+.badge{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:99px;
+  text-transform:uppercase;letter-spacing:.05em}
+.badge.out{background:var(--red);color:#fff}
+.badge.low{background:var(--amber);color:#fff}
+.badge.good{background:var(--green-soft);color:var(--green)}
+.badge.over{background:var(--blue-soft);color:var(--blue);border:1px solid rgba(42,60,120,.2)}
+.badge.arch{background:#EEE;color:#777}
+.badge.p5{background:var(--red);color:#fff}.badge.p4{background:#F4511E;color:#fff}
+.badge.p3{background:var(--amber-soft);color:var(--amber)}.badge.p2{background:var(--navy-soft);color:var(--navy)}
+.badge.p1{background:#EEE;color:#555}
+
+/* ---- Search ---- */
+.searchwrap{position:sticky;top:64px;z-index:30;padding:4px 0 10px;margin:-4px 0 6px}
+.searchbar{display:flex;align-items:center;gap:9px;border-radius:99px;padding:11px 16px}
+.searchbar input{border:none;padding:0;border-radius:0;font-size:15.5px;background:transparent}
+.searchbar input:focus{outline:none}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:10px 2px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;
+  background:rgba(255,255,255,.55);border:1px solid var(--glass-border);color:var(--muted);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);transition:.12s}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy);
+  box-shadow:0 4px 14px rgba(42,60,120,.35)}
+.chip[data-f="out"].on{background:var(--red);border-color:var(--red);box-shadow:0 4px 14px rgba(194,31,53,.35)}
+.chip[data-f="low"].on{background:var(--amber);border-color:var(--amber);box-shadow:0 4px 14px rgba(199,119,0,.35)}
+
+/* ---- Buttons ---- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  font-family:'Poppins';font-weight:700;font-size:13.5px;text-transform:uppercase;letter-spacing:.05em;
+  padding:14px;border-radius:var(--radius-sm);transition:transform .1s,filter .15s}
+.btn:active{transform:scale(.97)}
+.btn-navy{background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;box-shadow:0 6px 18px rgba(42,60,120,.30)}
+.btn-yellow{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 6px 18px rgba(194,31,53,.30)}
+.btn-red{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;box-shadow:0 6px 18px rgba(194,31,53,.30)}
+.btn-ghost{background:rgba(255,255,255,.7);border:1.5px solid var(--glass-border);color:var(--navy);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.btn-green{background:linear-gradient(135deg,#27B374,var(--green));color:#fff;box-shadow:0 6px 18px rgba(30,142,90,.30)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btnrow{display:flex;gap:9px}.btnrow .btn{flex:1}
+
+/* ---- Bottom navigation: floating glass pill ---- */
+nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:40;
+  max-width:560px;margin:0 auto;display:flex;justify-content:space-around;
+  padding:7px 6px;border-radius:26px;
+  background:linear-gradient(135deg,rgba(42,60,120,.90),rgba(30,45,94,.88));
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 12px 32px rgba(30,45,94,.38)}
+nav button{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:#8FA3B8;font-size:10px;font-weight:600;padding:6px 2px;border-radius:16px;letter-spacing:.03em;transition:.15s}
+nav button svg{width:21px;height:21px}
+nav button.on{color:#fff;background:rgba(255,255,255,.12)}
+nav button.on::after{content:"";width:5px;height:5px;border-radius:50%;background:#FF6B7E;margin-top:1px}
+nav button:focus-visible{outline:2px solid #fff}
+
+/* ---- Bottom sheet / modal ---- */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(20,30,64,.40);z-index:60;display:none;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.sheet-backdrop.open{display:block;animation:fade .15s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;
+  background:rgba(244,246,252,.86);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);border-bottom:none;
+  border-radius:26px 26px 0 0;max-height:88vh;overflow-y:auto;display:none;
+  padding:10px 18px calc(22px + env(safe-area-inset-bottom));max-width:760px;margin:0 auto;
+  box-shadow:0 -12px 40px rgba(30,45,94,.25)}
+@supports not (backdrop-filter:blur(2px)){.sheet{background:#F2F4FB}}
+.sheet.open{display:block;animation:up .22s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet .grab{width:42px;height:5px;border-radius:99px;background:rgba(42,60,120,.25);margin:4px auto 14px}
+.sheet h2{font-size:16px;color:var(--navy);margin-bottom:2px;line-height:1.25}
+.sheet .idline{font-size:12px;color:var(--muted);margin-bottom:12px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.kv div{background:rgba(255,255,255,.72);border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);padding:10px 12px}
+.kv b{display:block;font-size:14px;color:var(--navy)}
+.kv span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+
+/* ---- Dispense quick buttons ---- */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0 4px}
+.quick button{font-family:'Poppins';font-weight:700;font-size:16px;padding:16px 0;
+  background:rgba(255,255,255,.75);border:2px solid var(--line);border-radius:var(--radius-sm);color:var(--navy);transition:.12s}
+.quick button.on{background:linear-gradient(135deg,var(--red),var(--red-deep));border-color:var(--red);color:#fff;
+  box-shadow:0 6px 16px rgba(194,31,53,.35)}
+
+/* ---- Orders ---- */
+.ordtools{display:flex;align-items:center;gap:10px;border-radius:var(--radius-sm);
+  padding:9px 13px;margin-bottom:11px;font-size:12.5px}
+.ordtools button{font-family:'Poppins';font-weight:700;font-size:11.5px;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--navy);padding:7px 12px;border-radius:99px;
+  background:rgba(42,60,120,.10);border:1px solid rgba(42,60,120,.18)}
+.ordtools button.danger{color:#fff;background:linear-gradient(135deg,var(--red),var(--red-deep));
+  border:none;box-shadow:0 4px 10px rgba(194,31,53,.28);margin-left:auto}
+.ordtools .selcount{color:var(--muted);font-weight:600;font-size:11.5px}
+.ocheck{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;
+  border:2px solid rgba(42,60,120,.35);background:rgba(255,255,255,.7);
+  color:#fff;font-size:14px;font-weight:800;line-height:1;transition:.12s}
+.ocheck.on{background:linear-gradient(135deg,var(--navy),var(--navy-2));border-color:var(--navy);
+  box-shadow:0 3px 8px rgba(42,60,120,.30)}
+.orm{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-size:17px;font-weight:700;color:var(--red);background:var(--red-soft);
+  border:1px solid rgba(194,31,53,.22);transition:transform .1s}
+.orm:active{transform:scale(.88)}
+.supgroup{margin-bottom:18px}
+.suphead{display:flex;align-items:center;gap:9px;font-family:'Poppins';font-weight:700;
+  font-size:13px;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px}
+.suphead::after{content:'';flex:1;height:1.5px;background:var(--line)}
+.orow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.orow:last-child{border-bottom:none}
+.orow .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.orow .pk{font-size:11.5px;color:var(--muted)}
+
+/* ---- Transactions ---- */
+.tx{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border:none}
+.tx .ic{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:15px}
+.tx.RECEIVE .ic{background:var(--green-soft);color:var(--green)}
+.tx.DISPENSE .ic{background:var(--red-soft);color:var(--red)}
+.tx.ADJUSTMENT .ic{background:var(--blue-soft);color:var(--blue)}
+.tx.ORDER-ADD .ic{background:var(--blue-soft);color:var(--navy)}
+.tx.ORDER-REMOVE .ic{background:#EEE;color:#777}
+.tx.ARCHIVE .ic,.tx.RESTORE .ic{background:#EEE;color:#666}
+.tx .body{flex:1;min-width:0}
+.tx .t1{font-size:13.5px;font-weight:600}
+.tx .t2{font-size:11.5px;color:var(--muted)}
+.tx .qty{font-family:'Poppins';font-weight:700;font-size:14px;flex:none}
+.tx.RECEIVE .qty{color:var(--green)}.tx.DISPENSE .qty{color:var(--red)}
+
+/* ---- Misc ---- */
+.empty{text-align:center;color:var(--muted);padding:46px 20px;font-size:14px}
+.empty b{display:block;font-family:'Poppins';color:var(--navy);font-size:15px;margin-bottom:5px;text-transform:uppercase}
+#toast{position:fixed;left:50%;bottom:108px;transform:translateX(-50%) translateY(20px);
+  background:rgba(30,45,94,.92);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:13.5px;font-weight:600;padding:12px 20px;
+  border-radius:99px;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;pointer-events:none;
+  transition:.25s;z-index:99;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:rgba(143,22,38,.94)}
+/* ---- Login gate ---- */
+.login{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;
+  padding:20px;background:
+    radial-gradient(560px 420px at 88% -6%, rgba(194,31,53,.22), transparent 62%),
+    radial-gradient(700px 540px at -12% 12%, rgba(42,60,120,.30), transparent 60%),
+    linear-gradient(180deg,#1E2D5E,#0F1834)}
+.login.open{display:flex}
+.login-card{width:100%;max-width:380px;border-radius:26px;padding:26px 22px}
+.login-logo{display:flex;justify-content:center;margin-bottom:12px}
+.login-card h2{font-size:20px;color:var(--navy)}
+.login-sub{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.login-err{min-height:18px;font-size:12.5px;font-weight:600;color:var(--red);margin-top:9px;text-align:center}
+
+.spin{width:34px;height:34px;border:3.5px solid rgba(42,60,120,.18);border-top-color:var(--navy);
+  border-radius:50%;margin:40px auto;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.note{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:8px}
+.banner{background:rgba(250,231,234,.85);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  color:var(--red);border:1px solid rgba(194,31,53,.22);font-size:12.5px;font-weight:600;
+  padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:13px}
+</style>
+</head>
+<body>
+
+<header>
+  <img class="logo-mark" src="logo.png" alt="WHIS logo">
+  <div>
+    <h1>WHIMS</h1>
+    <div class="sub">Wise Homeopathy · Inventory</div>
+  </div>
+  <div id="syncDot"><i></i><span id="syncLabel">Offline</span></div>
+</header>
+
+<main>
+  <!-- DASHBOARD -->
+  <section class="view active" id="view-dash">
+    <div id="setupBanner" class="banner" style="display:none">
+      ⚙ Backend not connected — showing cached/demo data. Open <b>Settings</b> to paste your Apps Script URL.
+    </div>
+
+    <!-- Stock alert notification bar (filled by app.js) -->
+    <button id="alertBar" class="alertbar" aria-live="polite"></button>
+
+    <div class="view-title">Stock Overview</div>
+    <div class="stats" id="statGrid"></div>
+    <div class="view-title" style="margin-top:22px">Recent Activity</div>
+    <div class="card glass" id="dashTx"><div class="empty">No transactions yet</div></div>
+  </section>
+
+  <!-- SEARCH -->
+  <section class="view" id="view-search">
+    <div class="searchwrap">
+      <div class="searchbar glass">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#67748A" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Name, ID, potency, supplier…" autocomplete="off">
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip on" data-f="all">All</button>
+        <button class="chip" data-f="out">Out of stock</button>
+        <button class="chip" data-f="low">Low</button>
+        <button class="chip" data-f="good">Good</button>
+        <button class="chip" data-f="over">Overstock</button>
+        <button class="chip" data-f="need">Need purchase</button>
+        <button class="chip" data-f="arch">Archived</button>
+      </div>
+    </div>
+    <div id="results"></div>
+  </section>
+
+  <!-- ORDERS -->
+  <section class="view" id="view-orders">
+    <div class="view-title">Purchase Orders</div>
+    <div class="ordtools glass" id="orderTools" style="display:none">
+      <button id="selAll">Select all</button>
+      <span id="selCount" class="selcount"></span>
+      <button id="rmSel" class="danger">Remove selected</button>
+    </div>
+    <div class="btnrow" style="margin-bottom:14px">
+      <button class="btn btn-navy" id="copyOrder">Copy list</button>
+      <button class="btn btn-green" id="waOrder">WhatsApp</button>
+    </div>
+    <div id="orderList"></div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="view" id="view-history">
+    <div class="view-title">Transaction History</div>
+    <div class="card glass" id="txList"><div class="spin"></div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="view-settings">
+    <div class="view-title">Settings</div>
+    <div class="card glass">
+      <div class="view-title" style="margin:0 0 10px">Account</div>
+      <p class="note" id="whoAmI" style="margin:0 0 12px">Not logged in</p>
+      <button class="btn btn-red" id="logoutBtn">Log out</button>
+    </div>
+    <div class="card glass">
+      <label for="apiUrl">Google Apps Script URL</label>
+      <input id="apiUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec">
+      <label for="userName">Your name (for transaction log)</label>
+      <input id="userName" type="text" placeholder="e.g. Jasmine">
+      <div class="btnrow" style="margin-top:16px">
+        <button class="btn btn-yellow" id="saveSettings">Save</button>
+        <button class="btn btn-ghost" id="testApi">Test connection</button>
+      </div>
+      <p class="note">Paste the Web App URL from your Apps Script deployment (ends in <b>/exec</b>). The full setup guide is in SETUP_GUIDE.md in your GitHub repository.</p>
+    </div>
+    <div class="card glass">
+      <div class="view-title" style="margin:0 0 10px">Data</div>
+      <div class="btnrow">
+        <button class="btn btn-navy" id="refreshData">Refresh from sheet</button>
+      </div>
+      <p class="note" id="dataInfo">No data loaded yet.</p>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button data-v="dash" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Home</button>
+  <button data-v="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search</button>
+  <button data-v="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9H7.5L6 6Z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>Orders</button>
+  <button data-v="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>History</button>
+  <button data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/></svg>Settings</button>
+</nav>
+
+<!-- DETAIL SHEET -->
+<div class="sheet-backdrop" id="backdrop"></div>
+<div class="sheet" id="sheetDetail" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2 id="dName"></h2>
+  <div class="idline" id="dMeta"></div>
+  <div id="dBadges" style="margin-bottom:4px"></div>
+  <div class="kv" id="dKv"></div>
+  <div class="btnrow">
+    <button class="btn btn-green" id="goReceive">+ Receive</button>
+    <button class="btn btn-red" id="goDispense">− Dispense</button>
+  </div>
+  <div class="btnrow" style="margin-top:9px">
+    <button class="btn btn-ghost" id="goAdjust">Adjust</button>
+    <button class="btn btn-ghost" id="goArchive">Archive</button>
+  </div>
+</div>
+
+<!-- RECEIVE SHEET -->
+<div class="sheet" id="sheetReceive" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Receive Stock</h2>
+  <div class="idline" id="rName"></div>
+  <label for="rBottles">Bottles received *</label>
+  <input id="rBottles" type="number" min="1" inputmode="numeric" placeholder="e.g. 2">
+  <label for="rMl">ML received (optional)</label>
+  <input id="rMl" type="number" min="0" inputmode="numeric" placeholder="e.g. 200">
+  <label for="rSupplier">Supplier / company</label>
+  <input id="rSupplier" type="text" placeholder="e.g. BAKSON">
+  <label for="rAmount">Total amount paid (₹)</label>
+  <input id="rAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 510">
+  <label for="rMfd">MFD (YYYY-MM)</label>
+  <input id="rMfd" type="month">
+  <label for="rExpiry">Expiry (YYYY-MM)</label>
+  <input id="rExpiry" type="month">
+  <label for="rRemarks">Remarks</label>
+  <input id="rRemarks" type="text" placeholder="Batch no., notes…">
+  <div class="btnrow" style="margin-top:18px">
+    <button class="btn btn-ghost" data-close>Cancel</button>
+    <button class="btn btn-green" id="doReceive">Receive stock</button>
+  </div>
+</div>
+
+<!-- DISPENSE SHEET -->
+<div class="sheet" id="sheetDispense" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Dispense Stock</h2>
+  <div class="idline" id="xName"></div>
+  <div class="quick">
+    <button data-q="1">−1</button>
+    <button data-q="2">−2</button>
+    <button data-q="5">−5</button>
+    <button data-q="c">···</button>
+  </div>
+  <div id="customQtyWrap" style="display:none">
+    <label for="xQty">Custom bottles</label>
+    <input id="xQty" type="number" min="1" inputmode="numeric">
+  </div>
+  <label for="xMl">ML used (optional)</label>
+  <input id="xMl" type="number" min="0" inputmode="numeric" placeholder="e.g. 30">
+  <label for="xAmount">Amount charged (₹, optional)</label>
+  <input id="xAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 120">
+  <label for="xRemarks">Remarks</label>
+  <input id="xRemarks" type="text" placeholder="Patient ref., notes…">
+  <div class="btnrow" style="margin-top:18px">
+    <button class="btn btn-ghost" data-close>Cancel</button>
+    <button class="btn btn-red" id="doDispense">Dispense</button>
+  </div>
+</div>
+
+<!-- ADJUST SHEET -->
+<div class="sheet" id="sheetAdjust" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h2>Adjust Stock</h2>
+  <div class="idline" id="aName"></div>
+  <label for="aBottles">Correct bottle count *</label>
+  <input id="aBottles" type="number" min="0" inputmode="numeric">
+  <label for="aMl">Correct ML</label>
+  <input id="aMl" type="number" min="0" inputmode="numeric">
+  <label for="aPriority">Reorder priority (0–5)</label>
+  <select id="aPriority">
+    <option value="">— keep current —</option>
+    <option value="0">0 · Stock OK</option>
+    <option value="1">1 · Purchase if ordering</option>
+    <option value="2">2 · Medium</option>
+    <option value="3">3 · Important</option>
+    <option value="4">4 · High</option>
+    <option value="5">5 · Urgent</option>
+  </select>
+  <label for="aRemarks">Reason</label>
+  <input id="aRemarks" type="text" placeholder="e.g. Physical count correction">
+  <div class="btnrow" style="margin-top:18px">
+    <button class="btn btn-ghost" data-close>Cancel</button>
+    <button class="btn btn-navy" id="doAdjust">Save adjustment</button>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN (full-screen gate — app is unusable without a backend session) -->
+<div id="loginScreen" class="login">
+  <div class="login-card glass">
+    <div class="login-logo"><img class="logo-mark" src="logo.png" alt="WHIS logo" style="width:84px;height:84px;border-radius:22px"></div>
+    <h2 style="text-align:center">WHIMS</h2>
+    <p class="login-sub">Wise Homeopathy · Staff login</p>
+    <div id="loginApiWrap" style="display:none">
+      <label for="loginApi">Backend URL (first time only)</label>
+      <input id="loginApi" type="url" placeholder="https://script.google.com/macros/s/…/exec">
+    </div>
+    <label for="loginUser">Username</label>
+    <input id="loginUser" type="text" autocomplete="username" placeholder="e.g. jasmine">
+    <label for="loginPass">Password</label>
+    <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div id="loginErr" class="login-err" role="alert"></div>
+    <button class="btn btn-navy" id="loginBtn" style="margin-top:14px">Log in</button>
+    <p class="note" style="text-align:center;margin-top:14px">Sessions last 6 hours. Accounts are created by the administrator in Apps Script.</p>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
