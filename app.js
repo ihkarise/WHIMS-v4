@@ -17,7 +17,7 @@ let TX = store.get('tx', []);
 let current = null;          // medicine open in detail sheet
 let dispenseQty = 1;
 let filter = 'all';
-const API = () => (store.get('api', '') || '').trim();
+const API = () => (store.get('api', '') || 'https://script.google.com/macros/s/AKfycbwMfmOuKh8TWISu-69uw06aAZn0_knAZmwKUUGcBg_HWvGFNR9PHBSxwqFfEz84kvCnaA/exec').trim();
 const USER = () => store.get('user', 'Staff');
 
 /* ---------- session (token comes from backend login — no secrets live in this file) ---------- */
