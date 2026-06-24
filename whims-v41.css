@@ -1,0 +1,84 @@
+/* WHIMS v4.1-a — additive styles. Loaded after the inline <style> in index.html.
+   Uses the existing design tokens (--navy, --red, --glass, etc.). */
+
+/* ---- Close (✕) button injected into every sheet ---- */
+.v41-x{
+  position:absolute; top:12px; right:14px; width:34px; height:34px;
+  border-radius:50%; display:grid; place-items:center;
+  font-size:22px; line-height:1; color:var(--muted);
+  background:rgba(255,255,255,.65); border:1px solid var(--glass-border);
+  -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+  z-index:5; transition:transform .1s,filter .15s;
+}
+.v41-x:hover{ filter:brightness(.95); }
+.v41-x:active{ transform:scale(.9); }
+
+/* ---- Field wrapper (gives autocomplete a positioning context) ---- */
+.v41-field{ position:relative; }
+
+/* ---- Autocomplete dropdown ---- */
+.v41-ac{
+  position:absolute; left:0; right:0; top:100%; z-index:70; margin-top:4px;
+  max-height:280px; overflow-y:auto; border-radius:var(--radius-sm);
+  background:var(--glass-strong); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);
+}
+@supports not (backdrop-filter:blur(2px)){ .v41-ac{ background:#fff; } }
+.v41-ac-row{
+  display:block; width:100%; text-align:left; padding:10px 13px;
+  border-bottom:1px solid var(--line); color:var(--ink);
+}
+.v41-ac-row:last-child{ border-bottom:none; }
+.v41-ac-row:hover,.v41-ac-row:focus{ background:rgba(42,60,120,.08); }
+.v41-ac-row b{ display:block; font-weight:600; font-size:14px; }
+.v41-ac-row span{ display:block; font-size:11.5px; color:var(--muted); margin-top:1px; }
+
+/* ---- Search highlight ---- */
+mark.v41-mark{
+  background:rgba(199,119,0,.30); color:inherit; border-radius:3px;
+  padding:0 1px; font-weight:700;
+}
+
+/* ===========================================================================
+   DARK THEME  (activated via <html data-theme="dark">)
+   Header + bottom nav are already dark in the base design, so they stay.
+   =========================================================================== */
+html[data-theme="dark"]{
+  --navy-soft:#1b2647; --red-soft:#3a1620; --green-soft:#10301f;
+  --amber-soft:#33240c; --blue-soft:#1b2647;
+  --ink:#E8ECF7; --muted:#9AA6C8; --line:rgba(255,255,255,.12);
+  --glass:rgba(28,36,64,.62); --glass-strong:rgba(28,36,64,.82);
+  --glass-border:rgba(255,255,255,.12);
+  --glass-shadow:0 8px 32px rgba(0,0,0,.45);
+}
+html[data-theme="dark"] body{ background:#0E1530; }
+html[data-theme="dark"] body::before{
+  background:
+    radial-gradient(560px 420px at 88% -6%, rgba(194,31,53,.18), transparent 62%),
+    radial-gradient(700px 540px at -12% 12%, rgba(42,60,120,.30), transparent 60%),
+    radial-gradient(520px 480px at 50% 108%, rgba(30,142,90,.12), transparent 62%),
+    linear-gradient(180deg,#0F1736,#0B1228);
+}
+@supports not (backdrop-filter:blur(2px)){
+  html[data-theme="dark"] .glass{ background:rgba(28,36,64,.94); }
+  html[data-theme="dark"] .sheet{ background:#141C36; }
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea{
+  background:rgba(255,255,255,.06); color:var(--ink); border-color:rgba(255,255,255,.16);
+}
+html[data-theme="dark"] .searchbar input{ background:transparent; }
+html[data-theme="dark"] .kv div,
+html[data-theme="dark"] .quick button{ background:rgba(255,255,255,.06); }
+html[data-theme="dark"] .stat b{ color:#AFC0FF; }
+html[data-theme="dark"] .stat.red b{ color:#FF8A9B; }
+html[data-theme="dark"] .stat.amber b{ color:#FFC061; }
+html[data-theme="dark"] .view-title{ color:#AFC0FF; }
+html[data-theme="dark"] .sheet h2,
+html[data-theme="dark"] .login-card h2{ color:#AFC0FF; }
+html[data-theme="dark"] .chip{ background:rgba(255,255,255,.07); color:var(--muted); }
+html[data-theme="dark"] .btn-ghost{ background:rgba(255,255,255,.07); color:#AFC0FF; }
+html[data-theme="dark"] .med .pot{ background:rgba(120,140,220,.16); color:#AFC0FF; }
+html[data-theme="dark"] .v41-x{ background:rgba(255,255,255,.08); }
+html[data-theme="dark"] mark.v41-mark{ background:rgba(255,180,60,.28); color:#FFE0A6; }

@@ -1,0 +1,37 @@
+/* WHIMS v4.1 — Orders board, mounted inside #view-orders. Brand: WH Blue #2A3C78, Red #C21F35. */
+:root{ --wo-blue:#2A3C78; --wo-red:#C21F35; --wo-navy:#132A5C; --wo-mute:#64748B; --wo-line:#E2E8F0; }
+#wo-board{ font-family:Inter,system-ui,sans-serif; color:#1E293B; margin:0 0 18px;
+  background:#fff; border:1px solid var(--wo-line); border-radius:16px; padding:14px; box-shadow:0 2px 10px rgba(19,42,92,.05); }
+#wo-board .wo-head{ font-family:Poppins,Inter,sans-serif; font-weight:600; color:var(--wo-blue); font-size:15px; }
+#wo-board .wo-sub{ color:var(--wo-mute); font-weight:400; font-size:12px; }
+.wo-cap{ font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--wo-mute); margin:12px 0 4px; }
+.wo-search{ width:100%; box-sizing:border-box; padding:10px 12px; margin-top:10px;
+  border:1px solid var(--wo-line); border-radius:10px; font-size:14px; }
+.wo-res{ margin-top:4px; }
+.wo-res button{ display:block; width:100%; text-align:left; border:1px solid var(--wo-line); background:#fff;
+  border-radius:8px; padding:8px 10px; margin-top:4px; cursor:pointer; font-size:13px; }
+.wo-res button b{ color:var(--wo-blue); } .wo-res button span{ color:var(--wo-mute); font-size:11px; margin-left:6px; }
+.wo-warn{ display:block; font-style:normal; margin-top:3px; background:#FEF3C7; color:#92400E; border-radius:6px; padding:3px 7px; font-size:11px; }
+.wo-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid var(--wo-line); }
+.wo-top{ flex:1; min-width:0; font-size:13px; } .wo-meta{ color:var(--wo-mute); font-size:11px; margin-top:2px; }
+.wo-ctl{ display:flex; align-items:center; gap:6px; flex:none; }
+.wo-step{ width:30px; height:30px; border:1px solid var(--wo-line); background:#F8FAFC; border-radius:8px; font-size:16px; cursor:pointer; }
+.wo-qty{ min-width:22px; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600; }
+.wo-x2{ border:none; background:transparent; color:var(--wo-mute); font-size:15px; cursor:pointer; padding:4px 6px; }
+.wo-x2:hover{ color:var(--wo-red); }
+.wo-btns{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.wo-btn{ flex:1; min-width:96px; border:none; border-radius:10px; padding:9px 10px; font-weight:600; font-size:12.5px; cursor:pointer; }
+.wo-primary{ background:var(--wo-blue); color:#fff; } .wo-ghost{ background:#F1F5F9; color:var(--wo-navy); }
+.wo-danger{ background:#FEE2E2; color:var(--wo-red); } .wo-armed{ outline:2px solid var(--wo-red); outline-offset:1px; }
+.wo-pog{ background:#F8FAFC; border:1px solid var(--wo-line); border-radius:12px; padding:10px; margin-top:8px; }
+.wo-pohead{ display:flex; justify-content:space-between; align-items:center; font-size:11px; }
+.wo-tag{ font-family:'JetBrains Mono',monospace; color:var(--wo-navy); }
+.wo-status{ padding:1px 8px; border-radius:999px; font-size:10px; font-weight:700; }
+.wo-s-CART{ background:#E2E8F0; color:#475569; } .wo-s-ORDERED{ background:#DBEAFE; color:#1D4ED8; }
+.wo-s-PURCHASED{ background:#FEF3C7; color:#B45309; }
+.wo-note{ color:var(--wo-mute); font-size:12.5px; padding:6px 0; }
+.wo-legacy-cap{ font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--wo-mute); margin:16px 0 -2px; }
+/* the "already on order" pill injected into the legacy reorder rows */
+.wo-onorder{ display:inline-block; margin-top:3px; background:#DBEAFE; color:#1D4ED8;
+  border-radius:999px; padding:1px 8px; font-size:10px; font-weight:700; letter-spacing:.02em; }
+#wo-res:empty{ display:none; }
