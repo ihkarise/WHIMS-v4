@@ -1,0 +1,43 @@
+/* WHIMS v4.3 — Entry-source / audit UI. Load AFTER app.js (and whims-orders).
+   Badges on inventory rows + detail sheet, a source filter, and a sourcestats
+   analytics panel on the dashboard. Purely additive — no app file is changed. */
+
+/* ---- source badges (inventory rows + detail) ---- */
+.badge.src-badge{ font-weight:700; letter-spacing:.01em; border:none; }
+.badge.src-lens{ background:#E6ECFF; color:#26356E; }
+.badge.src-holoscan{ background:#DBF4EC; color:#0E6B4F; }
+.badge.src-whims{ background:#EEF1F6; color:#3A4660; }
+.badge.src-other{ background:#F1EDE6; color:#6B5836; }
+html.dark .badge.src-lens{ background:#26356E; color:#DCE4FF; }
+html.dark .badge.src-holoscan{ background:#0E6B4F; color:#CFF3E6; }
+html.dark .badge.src-whims{ background:#2A3146; color:#D6DCEC; }
+
+/* ---- source filter row (search view) ---- */
+.src-filter{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:10px 2px 0; }
+.src-filter .src-flabel{ font-size:11px; font-weight:700; color:var(--muted,#67748A); text-transform:uppercase; letter-spacing:.05em; margin-right:2px; }
+.src-chip{ border:1px solid var(--glass-border,#dde3ee); background:rgba(255,255,255,.7); color:var(--navy,#132A5C);
+  border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:600; cursor:pointer; }
+.src-chip.on{ background:var(--brand,#2A3C78); color:#fff; border-color:var(--brand,#2A3C78); }
+
+/* ---- analytics panel (dashboard) ---- */
+.src-stats{ padding:14px 14px 10px; margin:14px 0 0; }
+.src-stats-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; }
+.src-stats-head .t{ font-size:13px; font-weight:700; color:var(--navy,#132A5C); }
+.src-range{ display:flex; gap:4px; }
+.src-range button{ border:none; background:rgba(42,60,120,.08); color:var(--navy,#132A5C);
+  border-radius:8px; padding:5px 9px; font-size:11.5px; font-weight:600; cursor:pointer; }
+.src-range button.on{ background:var(--brand,#2A3C78); color:#fff; }
+.src-total{ font-size:11px; color:var(--muted,#67748A); margin:2px 0 10px; }
+.src-group{ margin-top:10px; }
+.src-group .g-cap{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted,#67748A); margin-bottom:6px; }
+.src-bar{ margin:7px 0; }
+.src-bar-top{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--navy,#132A5C); margin-bottom:3px; }
+.src-bar-top b{ font-family:'JetBrains Mono',ui-monospace,monospace; }
+.src-track{ height:7px; border-radius:999px; background:rgba(42,60,120,.1); overflow:hidden; }
+.src-track i{ display:block; height:100%; border-radius:999px; background:var(--brand,#2A3C78); transition:width .3s; }
+.src-track.cap i{ background:#0E6B4F; }
+.src-track.act i{ background:#C21F35; }
+.src-empty{ font-size:12px; color:var(--muted,#67748A); padding:6px 0; }
+
+/* high-contrast friendliness */
+html[data-contrast=high] .src-chip,html[data-contrast=high] .src-range button{ border:1px solid #1b2440; }
