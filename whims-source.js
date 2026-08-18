@@ -21,6 +21,14 @@
   const up = s => String(s==null?'':s).trim().toUpperCase();
   const titleCase = s => String(s||'').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()).replace(/_/g,' ');
 
+  /* ---- backend detection (app.js keeps API/TOKEN as const — NOT on window —
+         so the old `window.API` guard was always false. Read the cache app.js
+         writes instead: whims_api / whims_token. apiGet/apiPost ARE on window. */
+  function lsRaw(k){ try{ return localStorage.getItem('whims_'+k); }catch(e){ return null; } }
+  function hasApiFn(){ return typeof G('apiGet')==='function'; }
+  function hasToken(){ const r=lsRaw('token'); if(!r) return false; try{ return !!JSON.parse(r); }catch(e){ return !!r; } }
+  function ready(){ return hasApiFn() && hasToken(); }
+
   /* ---------------- pure helpers (unit-tested) ---------------- */
   /** Coarse source bucket from an EntrySource enum value. */
   function srcKey(entry){ const e=up(entry);
@@ -146,18 +154,27 @@
     if (!mountStats()) return;
     const body=D.getElementById('src-stats-body');
     const ag=G('apiGet');
-    if (typeof ag!=='function' || !(G('API') && G('API')())){
+    if (!hasApiFn() || !hasToken()){
       if (body) body.innerHTML='<div class="src-empty">Connect the backend to see source analytics.</div>';
       return;
     }
     const myseq=++_statSeq;                       // only the latest request paints
     if (body) body.innerHTML='<div class="src-empty">Loading…</div>';
     try{
-      const data=await ag('sourcestats', { range: STATE.range });
+      const data=await ag('sourceanalytics', { range: STATE.range }); // v4.3-a range-aware action
       if (myseq!==_statSeq) return;
       paintStats(data); STATE.loadedRange=STATE.range;
     }catch(e){
       if (myseq!==_statSeq) return;
+      // Older backend without 'sourceanalytics' → fall back to the legacy flat
+      // inventory-composition counts so the panel still shows something useful.
+      if (/unknown action/i.test(e.message||'')){
+        try{
+          const flat=await ag('sourcestats');
+          if (myseq!==_statSeq) return;
+          paintLegacy(flat); STATE.loadedRange=STATE.range; return;
+        }catch(e2){}
+      }
       if (body) body.innerHTML='<div class="src-empty">Could not load analytics — '+esc(e.message||'try again')+'</div>';
     }
   }
@@ -183,6 +200,22 @@
     body.innerHTML=h;
   }
 
+  /* Fallback renderer for the legacy flat shape { WHIMS, WISE_LENS, HOLOSCAN }
+     (current inventory composition) when the range-aware action is unavailable. */
+  function paintLegacy(flat){
+    flat=flat||{}; const body=D.getElementById('src-stats-body'); const totalEl=D.getElementById('src-total');
+    const rows=[['WHIMS',flat.WHIMS||0],['WISE_LENS',flat.WISE_LENS||0],['HOLOSCAN',flat.HOLOSCAN||0]]
+      .map(r=>({key:r[0],count:r[1]})).sort((a,b)=>b.count-a.count);
+    const total=rows.reduce((s,r)=>s+r.count,0);
+    if (totalEl) totalEl.textContent=total+' medicine'+(total===1?'':'s')+' · by entry source (current inventory)';
+    if (!body) return;
+    if (!total){ body.innerHTML='<div class="src-empty">No source data on the inventory yet.</div>'; return; }
+    const bar=(label,count,pct)=>'<div class="src-bar"><div class="src-bar-top"><span>'+esc(label)+'</span><b>'+count+'</b></div>'+
+      '<div class="src-track"><i style="width:'+pct+'%"></i></div></div>';
+    body.innerHTML='<div class="src-group"><div class="g-cap">By source</div>'+
+      rows.map(r=>bar(srcMeta(r.key,'').text, r.count, total?Math.round(r.count/total*100):0)).join('')+'</div>';
+  }
+
   /* ---------------- install (wrap app render fns) ---------------- */
   let wrappedResults=null, wrappedDetail=null, wrappedDash=null;
   function install(){
@@ -202,8 +235,8 @@
   function afterDash(){ if (mountStats() && STATE.loadedRange!==STATE.range) reloadStats(); }
 
   function boot(){ install(); mountFilter(); mountStats(); decorate();
-    // first analytics load happens lazily when the dashboard renders / when API is set
-    if (G('API') && G('API')()) reloadStats();
+    // first analytics load happens lazily when the dashboard renders / when ready
+    if (ready()) reloadStats();
   }
   if (D.readyState==='loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

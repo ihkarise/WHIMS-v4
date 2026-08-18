@@ -1,4 +1,5 @@
-/* WHIMS — Wise Homeopathy Inventory Management System
+/*
+ * WHIMS — Wise Homeopathy Inventory Management System
    Frontend logic v1.0 · Backend: Google Apps Script (Code.gs) */
 'use strict';
 
@@ -14,10 +15,11 @@ const store = {
 /* ---------- state ---------- */
 let INV = store.get('inv', []);
 let TX = store.get('tx', []);
+let INTAKE = store.get('intake', []);   // pending intake records awaiting approval
 let current = null;          // medicine open in detail sheet
 let dispenseQty = 1;
 let filter = 'all';
-const API = () => (store.get('api', '') || 'https://script.google.com/macros/s/AKfycbzsELTUHPOBqZ9H2uILDvGGD0GsdiglJAVcJGFIMDt5kU7EmlQkMzsIZrew93UuiB_RCA/exec').trim();
+const API = () => (store.get('api', '') || 'https://script.google.com/macros/s/AKfycbwMfmOuKh8TWISu-69uw06aAZn0_knAZmwKUUGcBg_HWvGFNR9PHBSxwqFfEz84kvCnaA/exec').trim();
 const USER = () => store.get('user', 'Staff');
 
 /* ---------- session (token comes from backend login — no secrets live in this file) ---------- */
@@ -82,9 +84,13 @@ async function loadAll(showToast){
   if (!API()){ setSync(false); renderAll(); return; }
   try {
     setSyncing();
-    const [inv, tx] = await Promise.all([apiGet('inventory'), apiGet('transactions', {limit:120})]);
-    INV = inv; TX = tx;
-    store.set('inv', INV); store.set('tx', TX);
+    const [inv, tx, intake] = await Promise.all([
+      apiGet('inventory'),
+      apiGet('transactions', {limit:120}),
+      apiGet('readintake')
+    ]);
+    INV = inv; TX = tx; INTAKE = Array.isArray(intake) ? intake : [];
+    store.set('inv', INV); store.set('tx', TX); store.set('intake', INTAKE);
     setSync(true);
     $('#dataInfo').textContent = INV.length + ' medicines loaded · last sync ' + new Date().toLocaleTimeString();
     if (showToast) toast('Synced — ' + INV.length + ' medicines');
@@ -114,13 +120,15 @@ function toast(msg, err){
 }
 
 /* ---------- navigation ---------- */
-$$('nav button').forEach(b => b.onclick = () => switchView(b.dataset.v));
+ $$('nav button').forEach(b => b.onclick = () => switchView(b.dataset.v));
 function switchView(v){
   $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $$('.view').forEach(x => x.classList.remove('active'));
-  $('#view-' + v).classList.add('active');
+  const view = $('#view-' + v);
+  if (view) view.classList.add('active');
   if (v === 'history') renderTx();
   if (v === 'orders') renderOrders();
+  if (v === 'intake') renderIntake();
   window.scrollTo({top:0});
 }
 
@@ -176,8 +184,8 @@ function renderDash(){
 }
 
 /* ---------- search ---------- */
-$('#q').addEventListener('input', renderResults);
-$$('#chips .chip').forEach(c => c.onclick = () => setChip(c.dataset.f));
+ $('#q').addEventListener('input', renderResults);
+ $$('#chips .chip').forEach(c => c.onclick = () => setChip(c.dataset.f));
 function setChip(f){
   filter = f;
   $$('#chips .chip').forEach(c => c.classList.toggle('on', c.dataset.f === f));
@@ -267,18 +275,18 @@ function closeSheets(){
   $$('.sheet').forEach(s => s.classList.remove('open'));
   document.body.style.overflow = '';
 }
-$('#backdrop').onclick = closeSheets;
-$$('[data-close]').forEach(b => b.onclick = closeSheets);
+ $('#backdrop').onclick = closeSheets;
+ $$('[data-close]').forEach(b => b.onclick = closeSheets);
 
 /* ---------- receive ---------- */
-$('#goReceive').onclick = () => {
+ $('#goReceive').onclick = () => {
   $('#rName').textContent = current.name + ' · current: ' + (current.bottles ?? '?') + ' btl';
   $('#rBottles').value = ''; $('#rMl').value = ''; $('#rRemarks').value = ''; $('#rAmount').value = '';
   $('#rSupplier').value = current.supplier1 || '';
   $('#rMfd').value = ''; $('#rExpiry').value = '';
   openSheet('#sheetReceive');
 };
-$('#doReceive').onclick = () => act('receive', $('#doReceive'), {
+ $('#doReceive').onclick = () => act('receive', $('#doReceive'), {
   id: current.id,
   bottles: Number($('#rBottles').value),
   ml: $('#rMl').value === '' ? '' : Number($('#rMl').value),
@@ -289,7 +297,7 @@ $('#doReceive').onclick = () => act('receive', $('#doReceive'), {
 }, b => b.bottles >= 1 || 'Enter how many bottles were received');
 
 /* ---------- dispense ---------- */
-$('#goDispense').onclick = () => {
+ $('#goDispense').onclick = () => {
   dispenseQty = 1;
   $('#xName').textContent = current.name + ' · current: ' + (current.bottles ?? '?') + ' btl';
   $('#xMl').value = ''; $('#xRemarks').value = ''; $('#xQty').value = ''; $('#xAmount').value = '';
@@ -297,13 +305,13 @@ $('#goDispense').onclick = () => {
   $$('.quick button').forEach(b => b.classList.toggle('on', b.dataset.q === '1'));
   openSheet('#sheetDispense');
 };
-$$('.quick button').forEach(b => b.onclick = () => {
+ $$('.quick button').forEach(b => b.onclick = () => {
   $$('.quick button').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
   if (b.dataset.q === 'c'){ $('#customQtyWrap').style.display = 'block'; $('#xQty').focus(); dispenseQty = 0; }
   else { $('#customQtyWrap').style.display = 'none'; dispenseQty = Number(b.dataset.q); }
 });
-$('#doDispense').onclick = () => {
+ $('#doDispense').onclick = () => {
   const qty = dispenseQty || Number($('#xQty').value);
   act('dispense', $('#doDispense'), {
     id: current.id, bottles: qty,
@@ -314,14 +322,14 @@ $('#doDispense').onclick = () => {
 };
 
 /* ---------- adjust ---------- */
-$('#goAdjust').onclick = () => {
+ $('#goAdjust').onclick = () => {
   $('#aName').textContent = current.name;
   $('#aBottles').value = current.bottles ?? '';
   $('#aMl').value = current.ml ?? '';
   $('#aPriority').value = ''; $('#aRemarks').value = '';
   openSheet('#sheetAdjust');
 };
-$('#doAdjust').onclick = () => act('adjust', $('#doAdjust'), {
+ $('#doAdjust').onclick = () => act('adjust', $('#doAdjust'), {
   id: current.id,
   bottles: Number($('#aBottles').value),
   ml: $('#aMl').value === '' ? '' : Number($('#aMl').value),
@@ -330,7 +338,7 @@ $('#doAdjust').onclick = () => act('adjust', $('#doAdjust'), {
 }, b => b.bottles >= 0 || 'Enter the correct bottle count');
 
 /* ---------- archive / restore ---------- */
-$('#goArchive').onclick = () => {
+ $('#goArchive').onclick = () => {
   const restoring = current.active === 'NO';
   if (!confirm((restoring ? 'Restore' : 'Archive') + ' "' + current.name + '"?')) return;
   act(restoring ? 'restore' : 'archive', $('#goArchive'), { id: current.id, remarks: '' }, () => true);
@@ -482,17 +490,83 @@ function orderText(){
   });
   return count ? out : '';
 }
-$('#copyOrder').onclick = async () => {
+ $('#copyOrder').onclick = async () => {
   const t = orderText();
   if (!t) return toast('No items selected — tick the boxes first', true);
   try { await navigator.clipboard.writeText(t); toast('Selected items copied'); }
   catch(e){ toast('Copy failed — long-press to select manually', true); }
 };
-$('#waOrder').onclick = () => {
+ $('#waOrder').onclick = () => {
   const t = orderText();
   if (!t) return toast('No items selected — tick the boxes first', true);
   window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank');
 };
+
+/* ---------- intake (pending stock approvals) ---------- */
+function intakeField(item, key){
+  // tolerate a few alternate field names from the backend
+  return item[key] ?? item[key.replace(/Time$/,'')] ?? item[key.replace(/([A-Z])/g, '_$1').toLowerCase()] ?? '—';
+}
+
+function renderIntake(){
+  const wrap = $('#intakeList');
+  if (!wrap) return;
+  const pending = INTAKE.filter(r => {
+    const st = String(r.status || r.state || '').toUpperCase();
+    return st === '' || st === 'PENDING' || st === 'NEW' || st === 'WAITING';
+  });
+
+  if (!pending.length){
+    wrap.innerHTML = '<div class="empty"><b>No pending stock</b>Stock captured via the intake form will appear here for approval.</div>';
+    return;
+  }
+
+  wrap.innerHTML = pending.map((item, i) => `
+    <div class="card glass intakeItem">
+      <div class="dKv">
+        ${kv(esc(intakeField(item,'medicine')), 'Medicine')}
+        ${kv(esc(intakeField(item,'pack')), 'Pack')}
+        ${kv(esc(intakeField(item,'potency')), 'Potency')}
+        ${kv(esc(intakeField(item,'supplier')), 'Supplier')}
+        ${kv(esc(intakeField(item,'qty')), 'Qty')}
+        ${kv(esc(intakeField(item,'action')), 'Action')}
+        ${kv(esc(intakeField(item,'source')), 'Source')}
+        ${kv(esc(intakeField(item,'capturedTime') || intakeField(item,'captured')), 'Captured time')}
+      </div>
+      <div class="intakeActions" style="display:flex;gap:8px;margin-top:10px">
+        <button class="ordbtn add" data-accept="${i}" style="flex:1;padding:10px">Accept</button>
+        <button class="ordbtn rm" data-reject="${i}" style="flex:1;padding:10px">Reject</button>
+      </div>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('[data-accept]').forEach(b => b.onclick = () => approveIntake(pending[Number(b.dataset.accept)]));
+  wrap.querySelectorAll('[data-reject]').forEach(b => b.onclick = () => rejectIntake(pending[Number(b.dataset.reject)]));
+}
+
+async function approveIntake(item){
+  if (!API()){ toast('Connect the backend first (Settings)', true); return; }
+  if (!confirm('Accept intake for "' + (item.medicine || item.name || 'this medicine') + '"?')) return;
+  try {
+    await apiPost({ action:'approveintake', intakeId: item.intakeId });
+    toast('Intake accepted ✓');
+    await loadAll(false);
+  } catch(e){
+    toast(e.message, true);
+  }
+}
+
+async function rejectIntake(item){
+  if (!API()){ toast('Connect the backend first (Settings)', true); return; }
+  if (!confirm('Reject intake for "' + (item.medicine || item.name || 'this medicine') + '"?')) return;
+  try {
+    await apiPost({ action:'rejectintake', intakeId: item.intakeId });
+    toast('Intake rejected');
+    await loadAll(false);
+  } catch(e){
+    toast(e.message, true);
+  }
+}
 
 /* ---------- history ---------- */
 function txRow(t){
@@ -512,15 +586,15 @@ function renderTx(){
 }
 
 /* ---------- settings ---------- */
-$('#apiUrl').value = store.get('api', '');
-$('#userName').value = store.get('user', '');
-$('#saveSettings').onclick = () => {
+ $('#apiUrl').value = store.get('api', '');
+ $('#userName').value = store.get('user', '');
+ $('#saveSettings').onclick = () => {
   store.set('api', $('#apiUrl').value.trim());
   store.set('user', $('#userName').value.trim() || 'Staff');
   toast('Settings saved');
   loadAll(true);
 };
-$('#testApi').onclick = async () => {
+ $('#testApi').onclick = async () => {
   const url = $('#apiUrl').value.trim();
   if (!url) return toast('Paste your Apps Script URL first', true);
   store.set('api', url);
@@ -532,7 +606,7 @@ $('#testApi').onclick = async () => {
     toast('Cannot reach backend — check the URL and deployment access (“Anyone”)', true);
   }
 };
-$('#refreshData').onclick = () => loadAll(true);
+ $('#refreshData').onclick = () => loadAll(true);
 
 /* ---------- login / logout ---------- */
 async function doLogin(){
@@ -560,10 +634,10 @@ async function doLogin(){
   }
   $('#loginBtn').disabled = false;
 }
-$('#loginBtn').onclick = doLogin;
-$('#loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+ $('#loginBtn').onclick = doLogin;
+ $('#loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-$('#logoutBtn').onclick = async () => {
+ $('#logoutBtn').onclick = async () => {
   if (!confirm('Log out of WHIMS?')) return;
   try { if (API() && TOKEN()) await fetch(API(), { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'logout', token: TOKEN() }) }); } catch(e){}
   setSession('', null);
@@ -571,7 +645,7 @@ $('#logoutBtn').onclick = async () => {
 };
 
 /* ---------- render all + boot ---------- */
-function renderAll(){ renderDash(); renderResults(); renderOrders(); renderTx(); }
+function renderAll(){ renderDash(); renderResults(); renderOrders(); renderTx(); renderIntake(); }
 setSync(false);
 renderAll();
 if (TOKEN()){

@@ -1,0 +1,98 @@
+/* WHIMS v4.2 — Phase 2: Editable Intake Review. Load AFTER whims-source.css.
+   Purely additive; rebuilds the cards inside #intakeList. Brand: WH Blue
+   #2A3C78, Red #C21F35. Namespaced wi-* so nothing collides. */
+:root{ --wi-blue:#2A3C78; --wi-red:#C21F35; --wi-navy:#132A5C; --wi-mute:#64748B; --wi-line:#E2E8F0; }
+
+#intakeList .wi-card{
+  font-family:Inter,system-ui,sans-serif; color:#1E293B; background:#fff;
+  border:1px solid var(--wi-line); border-radius:16px; padding:14px; margin:0 0 12px;
+  box-shadow:0 2px 10px rgba(19,42,92,.05);
+}
+.wi-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+.wi-src{ font-size:11px; font-weight:700; color:var(--wi-navy); background:#EEF1F6; border-radius:999px; padding:3px 10px; }
+.wi-conf{ font-size:11px; color:var(--wi-mute); font-family:'JetBrains Mono',monospace; }
+
+/* action segmented control */
+.wi-seg{ display:flex; gap:0; border:1px solid var(--wi-line); border-radius:10px; overflow:hidden; margin-bottom:10px; }
+.wi-seg button{ flex:1; border:none; background:#F8FAFC; color:var(--wi-mute); padding:9px 8px; font-size:12.5px; font-weight:600; cursor:pointer; }
+.wi-seg button.on{ background:var(--wi-blue); color:#fff; }
+
+/* inventory picker (RECEIVE mode) */
+.wi-pick{ position:relative; margin-bottom:10px; }
+.wi-search{ width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid var(--wi-line); border-radius:10px; font-size:14px; }
+.wi-res{ position:absolute; left:0; right:0; top:100%; z-index:30; margin-top:4px; max-height:240px; overflow-y:auto;
+  background:#fff; border:1px solid var(--wi-line); border-radius:10px; box-shadow:0 8px 24px rgba(19,42,92,.12); }
+.wi-res:empty{ display:none; }
+.wi-res button{ display:block; width:100%; text-align:left; border:none; border-bottom:1px solid var(--wi-line);
+  background:#fff; padding:9px 12px; cursor:pointer; font-size:13px; }
+.wi-res button:last-child{ border-bottom:none; }
+.wi-res button:hover{ background:rgba(42,60,120,.07); }
+.wi-res b{ color:var(--wi-blue); } .wi-res span{ color:var(--wi-mute); font-size:11px; margin-left:6px; }
+.wi-matched{ font-size:12px; color:#0E6B4F; background:#DBF4EC; border-radius:8px; padding:6px 10px; margin-top:6px; display:none; }
+.wi-matched.on{ display:block; }
+.wi-matched b{ font-family:'JetBrains Mono',monospace; }
+
+/* field grid */
+.wi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; }
+.wi-f{ display:flex; flex-direction:column; gap:3px; }
+.wi-f.full{ grid-column:1 / -1; }
+.wi-f label{ font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--wi-mute); font-weight:700; display:flex; align-items:center; gap:6px; }
+.wi-f input{ box-sizing:border-box; padding:8px 10px; border:1px solid var(--wi-line); border-radius:8px; font-size:14px; border-left:3px solid transparent; transition:background .15s,border-color .15s; }
+.wi-f input:focus{ outline:none; border-color:var(--wi-blue); box-shadow:0 0 0 2px rgba(42,60,120,.12); }
+.wi-f input[readonly]{ background:#F1F5F9; color:var(--wi-mute); }
+
+/* Phase 3 — OCR change tracking: yellow bg + thin left border + Edited badge */
+.wi-f.wi-changed input{ background:#FEF9C3; border-left-color:#C77700; }
+.wi-edited{ display:none; font-size:9px; font-weight:800; letter-spacing:.03em; text-transform:uppercase;
+  color:#92400E; background:#FDE68A; border-radius:999px; padding:1px 6px; }
+.wi-f.wi-changed .wi-edited{ display:inline-block; }
+.wi-diffnote{ font-size:11px; color:#92400E; background:#FEF3C7; border-radius:8px; padding:6px 9px; margin-top:8px; display:none; }
+.wi-diffnote.on{ display:block; }
+
+/* Phase 4 — duplicate detection banner */
+.wi-dupbox:empty{ display:none; }
+.wi-dupbox{ margin-top:10px; border:1px solid #FCA5A5; background:#FEF2F2; border-radius:10px; padding:10px; }
+.wi-dup-head{ font-size:12px; font-weight:700; color:var(--wi-red); margin-bottom:6px; }
+.wi-dup-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-top:1px dashed #FCA5A5; }
+.wi-dup-row:first-of-type{ border-top:none; }
+.wi-dup-info{ font-size:12.5px; flex:1; min-width:0; }
+.wi-dup-info span{ display:block; color:var(--wi-mute); font-size:10.5px; margin-top:1px; }
+.wi-dup-btns{ display:flex; gap:5px; flex:none; }
+.wi-dup-btns button{ border:none; border-radius:7px; padding:6px 9px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.wi-dup-btns [data-dup-act="merge"]{ background:var(--wi-blue); color:#fff; }
+.wi-dup-btns [data-dup-act="keep"]{ background:#F1F5F9; color:var(--wi-navy); }
+.wi-dup-btns [data-dup-act="ignore"]{ background:#F1F5F9; color:var(--wi-mute); }
+
+/* Phase 5 — Undo Approval banner (persists at the top of the queue) */
+.wi-undo{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  background:#ECFDF5; border:1px solid #6EE7B7; border-radius:12px; padding:9px 12px; margin:0 0 10px; font-size:12.5px; color:#065F46; }
+.wi-undo b{ font-family:'JetBrains Mono',monospace; }
+.wi-undo-timer{ color:#047857; font-size:11px; }
+.wi-undo-btn{ border:none; background:var(--wi-blue); color:#fff; border-radius:8px; padding:6px 12px; font-size:11.5px; font-weight:700; cursor:pointer; }
+.wi-undo-btn:disabled{ opacity:.6; cursor:default; }
+
+.wi-actions{ display:flex; gap:8px; margin-top:12px; }
+.wi-btn{ flex:1; border:none; border-radius:10px; padding:11px; font-weight:700; font-size:13.5px; cursor:pointer; }
+.wi-accept{ background:var(--wi-blue); color:#fff; }
+.wi-accept:disabled{ opacity:.55; cursor:default; }
+.wi-reject{ background:#FEE2E2; color:var(--wi-red); }
+.wi-note{ font-size:11px; color:var(--wi-mute); margin-top:8px; }
+
+html[data-theme="dark"] #intakeList .wi-card{ background:#141C36; border-color:rgba(255,255,255,.12); color:#E8ECF7; }
+html[data-theme="dark"] .wi-src{ background:#2A3146; color:#D6DCEC; }
+html[data-theme="dark"] .wi-seg{ border-color:rgba(255,255,255,.14); }
+html[data-theme="dark"] .wi-seg button{ background:rgba(255,255,255,.05); color:#9AA6C8; }
+html[data-theme="dark"] .wi-f input{ background:rgba(255,255,255,.06); color:#E8ECF7; border-color:rgba(255,255,255,.16); }
+html[data-theme="dark"] .wi-f input[readonly]{ background:rgba(255,255,255,.03); }
+html[data-theme="dark"] .wi-f.wi-changed input{ background:#3a2a0c; }
+html[data-theme="dark"] .wi-edited{ background:#5a4108; color:#FDE68A; }
+html[data-theme="dark"] .wi-diffnote{ background:#3a2a0c; color:#FDE68A; }
+html[data-theme="dark"] .wi-dupbox{ background:#3a1620; border-color:#7f1d1d; }
+html[data-theme="dark"] .wi-dup-row{ border-color:#7f1d1d; }
+html[data-theme="dark"] .wi-dup-btns [data-dup-act="keep"],
+html[data-theme="dark"] .wi-dup-btns [data-dup-act="ignore"]{ background:rgba(255,255,255,.08); color:#D6DCEC; }
+html[data-theme="dark"] .wi-undo{ background:#06281d; border-color:#0E6B4F; color:#A7F3D0; }
+html[data-theme="dark"] .wi-undo-timer{ color:#6EE7B7; }
+html[data-theme="dark"] .wi-search{ background:rgba(255,255,255,.06); color:#E8ECF7; border-color:rgba(255,255,255,.16); }
+html[data-theme="dark"] .wi-res{ background:#141C36; border-color:rgba(255,255,255,.14); }
+html[data-theme="dark"] .wi-res button{ background:#141C36; color:#E8ECF7; border-color:rgba(255,255,255,.1); }

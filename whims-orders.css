@@ -35,3 +35,36 @@
 .wo-onorder{ display:inline-block; margin-top:3px; background:#DBEAFE; color:#1D4ED8;
   border-radius:999px; padding:1px 8px; font-size:10px; font-weight:700; letter-spacing:.02em; }
 #wo-res:empty{ display:none; }
+
+/* ===== Phase A — Smart Order Engine: Order Card, bulk bar, suggestion box ===== */
+.wo-card{ background:#F8FAFC; border:1px solid var(--wo-line); border-radius:12px; padding:10px; margin-top:8px; }
+.wo-cardhead{ display:flex; align-items:center; gap:8px; }
+.wo-chk{ flex:none; } .wo-chk input{ width:16px; height:16px; }
+.wo-cardtitle{ flex:1; min-width:0; font-size:13px; }
+.wo-cardgrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.wo-fld{ display:flex; flex-direction:column; gap:3px; }
+.wo-fld-wide{ grid-column:1 / -1; }
+.wo-fld label{ font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--wo-mute); font-weight:700; }
+.wo-finput{ box-sizing:border-box; padding:7px 9px; border:1px solid var(--wo-line); border-radius:8px; font-size:13px; background:#fff; }
+.wo-finput:focus{ outline:none; border-color:var(--wo-blue); box-shadow:0 0 0 2px rgba(42,60,120,.12); }
+.wo-qtywrap{ display:flex; align-items:center; gap:5px; }
+.wo-qtyinput{ width:100%; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600; }
+.wo-suggest{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:8px; padding-top:8px;
+  border-top:1px dashed var(--wo-line); font-size:11px; color:var(--wo-mute); }
+.wo-suggest b{ font-family:'JetBrains Mono',monospace; color:var(--wo-navy); }
+.wo-usesuggest{ margin-left:auto; border:none; background:var(--wo-blue); color:#fff; border-radius:999px;
+  padding:4px 11px; font-size:11px; font-weight:700; cursor:pointer; }
+
+.wo-bulkbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
+  background:#EEF1F6; border-radius:10px; padding:8px 10px; margin:8px 0; font-size:12px; color:var(--wo-navy); }
+.wo-bulkbtns{ display:flex; gap:5px; flex-wrap:wrap; }
+.wo-bx{ border:none; background:#fff; color:var(--wo-navy); border:1px solid var(--wo-line);
+  border-radius:7px; padding:5px 9px; font-size:11px; font-weight:600; cursor:pointer; }
+.wo-bx:hover{ background:rgba(42,60,120,.06); }
+.wo-bx[data-bulk="delete"]{ color:var(--wo-red); }
+
+html[data-theme="dark"] .wo-card{ background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.12); }
+html[data-theme="dark"] .wo-finput{ background:rgba(255,255,255,.06); color:#E8ECF7; border-color:rgba(255,255,255,.16); }
+html[data-theme="dark"] .wo-suggest{ border-color:rgba(255,255,255,.12); }
+html[data-theme="dark"] .wo-bulkbar{ background:rgba(255,255,255,.06); color:#D6DCEC; }
+html[data-theme="dark"] .wo-bx{ background:rgba(255,255,255,.05); color:#D6DCEC; border-color:rgba(255,255,255,.14); }

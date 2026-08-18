@@ -1,0 +1,36 @@
+/* WHIMS v4.2 — Phase 9: Manual AI Assistant. Load AFTER whims-dashboard.css.
+   Trigger button + the injected #sheetAI's inner content (the sheet chrome
+   itself reuses the app's existing .sheet/.sheet-backdrop system). */
+
+.ai-fab{ display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; box-sizing:border-box; margin:12px 0 0; padding:13px;
+  border:none; border-radius:14px; background:linear-gradient(135deg,var(--blue),var(--navy,#132A5C));
+  color:#fff; font-family:Poppins,Inter,sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+  box-shadow:0 4px 14px rgba(42,60,120,.25); }
+.ai-fab:active{ transform:scale(.98); }
+
+#sheetAI h2{ margin-bottom:2px; }
+#sheetAI .ai-sub{ font-size:12px; color:var(--muted,#67748A); margin-bottom:12px; }
+.ai-presets{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
+.ai-preset-btn{ border:1px solid var(--line,#E2E8F0); background:#F8FAFC; color:var(--navy,#132A5C);
+  border-radius:999px; padding:8px 13px; font-size:12.5px; font-weight:600; cursor:pointer; }
+.ai-preset-btn:hover{ background:rgba(42,60,120,.08); }
+.ai-preset-btn:disabled{ opacity:.5; cursor:default; }
+
+.ai-custom{ display:flex; gap:8px; margin:4px 0 16px; }
+.ai-custom input{ flex:1; box-sizing:border-box; padding:11px 13px; border:1px solid var(--line,#E2E8F0); border-radius:10px; font-size:14px; }
+.ai-custom button{ border:none; background:var(--blue); color:#fff; border-radius:10px; padding:0 18px; font-weight:700; cursor:pointer; }
+.ai-custom button:disabled{ opacity:.6; cursor:default; }
+
+.ai-result{ min-height:34px; }
+.ai-result .ai-loading{ color:var(--muted,#67748A); font-size:13px; padding:8px 0; }
+.ai-result .ai-error{ color:var(--red); font-size:13px; background:var(--red-soft); border-radius:10px; padding:10px 12px; }
+.ai-result .ai-answer{ font-size:14px; line-height:1.55; color:#1E293B; white-space:pre-wrap;
+  background:#F8FAFC; border-radius:12px; padding:12px 14px; border:1px solid var(--line,#E2E8F0); }
+.ai-meta{ font-size:10.5px; color:var(--muted,#67748A); margin-top:6px; }
+.ai-disclaimer{ font-size:10.5px; color:var(--muted,#67748A); margin-top:14px; padding-top:10px; border-top:1px dashed var(--line,#E2E8F0); }
+
+html[data-theme="dark"] .ai-preset-btn{ background:rgba(255,255,255,.06); color:#D6DCEC; border-color:rgba(255,255,255,.14); }
+html[data-theme="dark"] .ai-custom input{ background:rgba(255,255,255,.06); color:#E8ECF7; border-color:rgba(255,255,255,.16); }
+html[data-theme="dark"] .ai-result .ai-answer{ background:rgba(255,255,255,.05); color:#E8ECF7; border-color:rgba(255,255,255,.12); }
+html[data-theme="dark"] .ai-disclaimer{ border-color:rgba(255,255,255,.12); }

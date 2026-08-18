@@ -1,0 +1,44 @@
+/* WHIMS v4.2 — Phase 7: Dashboard Integration. Load AFTER whims-source.css.
+   Cards reuse the base app's existing --red/--green/--amber/--blue tokens
+   (defined in index.html's inline <style>) rather than redefining them, so
+   colors stay identical to the rest of the dashboard. Purely additive. */
+
+.di-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px; }
+@media (max-width:480px){ .di-grid{ grid-template-columns:1fr; } }
+
+.di-card{ font-family:Inter,system-ui,sans-serif; padding:14px; }
+.di-card .di-title{ font-family:Poppins,Inter,sans-serif; font-weight:600; font-size:13px; color:var(--blue); margin-bottom:8px; }
+
+/* stacked health bar */
+.di-stack{ display:flex; height:8px; border-radius:999px; overflow:hidden; background:rgba(42,60,120,.08); margin:2px 0 10px; }
+.di-stack i{ display:block; height:100%; }
+
+/* legend chips + expiry pills */
+.di-leg,.di-pill{ display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--muted,#67748A); margin:0 10px 4px 0; }
+.di-leg b,.di-pill b{ font-family:'JetBrains Mono',ui-monospace,monospace; font-weight:700; color:var(--blue); }
+.di-leg-red b,.di-pill-red b{ color:var(--red); }
+.di-leg-amber b,.di-pill-amber b{ color:var(--amber-deep,var(--amber)); }
+.di-leg-green b,.di-pill-green b{ color:var(--green); }
+.di-leg-blue b,.di-pill-blue b{ color:var(--blue); }
+.di-pills{ margin-bottom:6px; }
+
+/* item rows (clickable → opens detail sheet) */
+.di-list{ margin-top:2px; }
+.di-row{ display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--line,#E2E8F0); cursor:pointer; font-size:12.5px; }
+.di-row:last-child{ border-bottom:none; }
+.di-row:hover{ background:rgba(42,60,120,.05); }
+.di-name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.di-sub{ color:var(--muted,#67748A); font-size:11px; margin-left:8px; flex:none; }
+.di-dot{ width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:6px; flex:none; }
+.di-dot.red{ background:var(--red); } .di-dot.amber{ background:var(--amber); }
+
+.di-empty{ color:var(--muted,#67748A); font-size:12px; padding:6px 0; }
+.di-foot{ color:var(--muted,#67748A); font-size:11px; margin-top:6px; padding-top:6px; border-top:1px dashed var(--line,#E2E8F0); }
+.di-big{ font-family:'JetBrains Mono',ui-monospace,monospace; font-weight:800; font-size:24px; color:var(--blue); }
+
+html[data-theme="dark"] .di-card .di-title{ color:#AFC0FF; }
+html[data-theme="dark"] .di-row{ border-color:rgba(255,255,255,.1); }
+html[data-theme="dark"] .di-row:hover{ background:rgba(255,255,255,.05); }
+html[data-theme="dark"] .di-foot{ border-color:rgba(255,255,255,.12); }
+html[data-theme="dark"] .di-big{ color:#AFC0FF; }
+html[data-theme="dark"] .di-leg b,html[data-theme="dark"] .di-pill b{ color:#AFC0FF; }
