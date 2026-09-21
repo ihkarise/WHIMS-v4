@@ -281,20 +281,41 @@ function closeSheets(){
 /* ---------- receive ---------- */
  $('#goReceive').onclick = () => {
   $('#rName').textContent = current.name + ' · current: ' + (current.bottles ?? '?') + ' btl';
-  $('#rBottles').value = ''; $('#rMl').value = ''; $('#rRemarks').value = ''; $('#rAmount').value = '';
+  $('#rBottles').value = ''; $('#rMl').value = ''; $('#rRemarks').value = ''; $('#rUnitCost').value = '';
   $('#rSupplier').value = current.supplier1 || '';
+  // pre-fill cost per bottle from the medicine's known primary cost, if any
+  if (current.cost1) $('#rUnitCost').value = current.cost1;
   $('#rMfd').value = ''; $('#rExpiry').value = '';
+  updateReceiveTotal();
   openSheet('#sheetReceive');
 };
- $('#doReceive').onclick = () => act('receive', $('#doReceive'), {
-  id: current.id,
-  bottles: Number($('#rBottles').value),
-  ml: $('#rMl').value === '' ? '' : Number($('#rMl').value),
-  supplier: $('#rSupplier').value.trim(),
-  amount: $('#rAmount').value === '' ? 0 : Number($('#rAmount').value),
-  mfd: $('#rMfd').value, expiry: $('#rExpiry').value,
-  remarks: $('#rRemarks').value.trim()
-}, b => b.bottles >= 1 || 'Enter how many bottles were received');
+/* Feature F — receiving cost: user enters quantity × cost per bottle,
+   the total is CALCULATED (never the other way around). */
+function receiveUnitCalc(){
+  const qty = Number($('#rBottles').value) || 0;
+  const unit = $('#rUnitCost').value === '' ? 0 : Number($('#rUnitCost').value);
+  if (window.WHIMS45) return window.WHIMS45.receivingTotal(qty, unit);
+  return { quantity: qty, unitCost: unit, total: Math.round(qty * unit * 100) / 100 };
+}
+function updateReceiveTotal(){
+  const el = $('#rTotalCalc'); if (!el) return;
+  const c = receiveUnitCalc();
+  el.textContent = window.WHIMS45 ? window.WHIMS45.formatINR(c.total) : ('₹' + c.total.toFixed(2));
+}
+['#rBottles', '#rUnitCost'].forEach(sel => { const el = $(sel); if (el) el.addEventListener('input', updateReceiveTotal); });
+ $('#doReceive').onclick = () => {
+  const calc = receiveUnitCalc();
+  act('receive', $('#doReceive'), {
+    id: current.id,
+    bottles: Number($('#rBottles').value),
+    ml: $('#rMl').value === '' ? '' : Number($('#rMl').value),
+    supplier: $('#rSupplier').value.trim(),
+    unitCost: $('#rUnitCost').value === '' ? '' : calc.unitCost,  // per-bottle cost (v4.5)
+    amount: calc.total,                                           // derived total (backward compatible)
+    mfd: $('#rMfd').value, expiry: $('#rExpiry').value,
+    remarks: $('#rRemarks').value.trim()
+  }, b => b.bottles >= 1 || 'Enter how many bottles were received');
+};
 
 /* ---------- dispense ---------- */
  $('#goDispense').onclick = () => {

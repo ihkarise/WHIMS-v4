@@ -480,12 +480,13 @@ nav button:focus-visible{outline:2px solid #fff}
   <div class="idline" id="rName"></div>
   <label for="rBottles">Bottles received *</label>
   <input id="rBottles" type="number" min="1" inputmode="numeric" placeholder="e.g. 2">
+  <label for="rUnitCost">Cost per bottle (₹)</label>
+  <input id="rUnitCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 150">
+  <div id="rTotalRow" class="v45-total-row" aria-live="polite">Total <b id="rTotalCalc">₹0.00</b><span class="v45-total-note">quantity × cost per bottle</span></div>
   <label for="rMl">ML received (optional)</label>
   <input id="rMl" type="number" min="0" inputmode="numeric" placeholder="e.g. 200">
   <label for="rSupplier">Supplier / company</label>
   <input id="rSupplier" type="text" placeholder="e.g. BAKSON">
-  <label for="rAmount">Total amount paid (₹)</label>
-  <input id="rAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 510">
   <label for="rMfd">MFD (YYYY-MM)</label>
   <input id="rMfd" type="month">
   <label for="rExpiry">Expiry (YYYY-MM)</label>

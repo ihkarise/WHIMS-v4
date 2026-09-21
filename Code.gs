@@ -227,11 +227,19 @@ function receiveStock(body) {
   if (body.mfd) sh.getRange(row, COL.MFD).setValue(body.mfd);
   if (body.expiry) sh.getRange(row, COL.EXPIRY).setValue(body.expiry);
 
-  // amount paid: log it, and refresh Primary Cost with the per-bottle price
-  var amount = num(body.amount);
-  if (amount > 0) {
-    sh.getRange(row, COL.COST1).setValue(Math.round((amount / addBottles) * 100) / 100);
+  // Cost handling (v4.5): the client sends the per-bottle unit cost and the app
+  // derives the total. We store the per-bottle cost in Primary Cost and log the
+  // total amount. Backward compatible: if only a legacy total `amount` arrives
+  // (older clients), fall back to deriving per-bottle = amount / bottles.
+  var amount, unitCost;
+  if (body.unitCost !== undefined && body.unitCost !== null && body.unitCost !== '') {
+    unitCost = num(body.unitCost);
+    amount = Math.round(unitCost * addBottles * 100) / 100;   // total = qty × unit cost
+  } else {
+    amount = num(body.amount);
+    unitCost = amount > 0 ? Math.round((amount / addBottles) * 100) / 100 : 0;
   }
+  if (unitCost > 0) sh.getRange(row, COL.COST1).setValue(unitCost);
   stamp(sh, row);
 
   logTx(loc.id, loc.name, 'RECEIVE', addBottles, prevBottles, newBottles, body.user,
