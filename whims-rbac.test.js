@@ -154,7 +154,7 @@ group('Role migration');
   const users = { legacy: { salt: salt, hash: box.hashPw(salt, 'legacypw1') } };
   box.PropertiesService.getScriptProperties().setProperty('WHIMS_USERS', JSON.stringify(users));
 
-  ok('14a roleOf legacy defaults to OPERATOR', box.roleOf('legacy') === 'OPERATOR');
+  ok('14a getUserRole legacy defaults to OPERATOR', box.getUserRole('legacy') === 'OPERATOR');
   const r = box.MIGRATE_ROLES();
   ok('14b MIGRATE_ROLES stamps 1 account', r.migrated === 1);
   const after = JSON.parse(box.PropertiesService.getScriptProperties().getProperty('WHIMS_USERS'));
@@ -225,21 +225,21 @@ group('Inventory-action RBAC (direct API)');
   // VIEWER blocked on every write BEFORE any sheet access (Forbidden, not a sheet error)
   ['receive', 'dispense', 'adjust', 'archive', 'restore', 'priority', 'importmedicines'].forEach(a => {
     const r = post(box, { action: a, token: vtok, id: 'HOM001', bottles: 1, rows: [{ name: 'x' }] });
-    ok('viewer blocked on ' + a, r.ok === false && /Forbidden/i.test(r.error));
+    ok('viewer blocked on ' + a, r.ok === false && /permission denied|forbidden/i.test(r.error));
   });
   // OPERATOR blocked on ADMIN-only actions (Forbidden), allowed to reach OPERATOR actions
   ['adjust', 'archive', 'restore', 'importmedicines'].forEach(a => {
     const r = post(box, { action: a, token: otok, id: 'HOM001', bottles: 1, rows: [{ name: 'x' }] });
-    ok('operator blocked on admin-only ' + a, r.ok === false && /Forbidden/i.test(r.error));
+    ok('operator blocked on admin-only ' + a, r.ok === false && /permission denied|forbidden/i.test(r.error));
   });
   // 5 (import) authorization: operator denied, admin passes the gate (then hits sheet stub)
-  ok('operator denied import (Forbidden)', /Forbidden/i.test(post(box, { action: 'importmedicines', token: otok, rows: [{ name: 'x' }] }).error));
+  ok('operator denied import (Forbidden)', /permission denied|forbidden/i.test(post(box, { action: 'importmedicines', token: otok, rows: [{ name: 'x' }] }).error));
   const atok = loginAs(box, 'admin1', 'adminpass1');
   const impAdmin = post(box, { action: 'importmedicines', token: atok, rows: [{ name: 'x' }] });
-  ok('admin passes import gate (fails later only at sheet stub)', impAdmin.ok === false && !/Forbidden/i.test(impAdmin.error));
+  ok('admin passes import gate (fails later only at sheet stub)', impAdmin.ok === false && !/permission denied|forbidden/i.test(impAdmin.error));
   // operator IS allowed to reach receive/dispense/priority (passes gate, then sheet stub)
   const recOp = post(box, { action: 'priority', token: otok, id: 'HOM001', priority: 3 });
-  ok('operator passes priority gate', recOp.ok === false && !/Forbidden/i.test(recOp.error));
+  ok('operator passes priority gate', recOp.ok === false && !/permission denied|forbidden/i.test(recOp.error));
 }
 
 /* ================================================================
@@ -297,9 +297,14 @@ group('Session, role-spoofing, me');
   // me returns SERVER role
   ok('me returns server role for operator', get(box, { action: 'me', token: otok }).data.role === 'OPERATOR');
   ok('unauthenticated me rejected', get(box, { action: 'me', token: 'bogus' }).ok === false);
-  // WQE reserved + read-only
-  const wqe = get(box, { action: 'smartsearch', token: otok });
-  ok('WQE action reserved, read-only, not integrated', wqe.ok === false && /read-only/i.test(wqe.error));
+  // WQE is now integrated + read/analysis-only for ALL roles: the gate must PASS
+  // (no permission-denied) for OPERATOR and VIEWER; it only fails later at the
+  // (unstubbed) sheet read in this auth-only harness.
+  const wqeOp = get(box, { action: 'smartsearch', token: otok });
+  ok('WQE smartsearch not permission-denied for OPERATOR', !/permission denied/i.test(String(wqeOp.error)));
+  const vtok2 = loginAs(box, 'view1', 'viewpass1');
+  const wqeView = get(box, { action: 'smartsearch', token: vtok2 });
+  ok('WQE smartsearch not permission-denied for VIEWER (read-only, all roles)', !/permission denied/i.test(String(wqeView.error)));
 }
 
 /* ---------- summary ---------- */
