@@ -148,6 +148,7 @@ function doPost(e) {
     else if (action === 'archive')  result = setActive(body, 'NO', 'ARCHIVE');
     else if (action === 'restore')  result = setActive(body, 'YES', 'RESTORE');
     else if (action === 'priority') result = setPriority(body);
+    else if (action === 'importmedicines') result = importMedicines(body);
     else throw new Error('Unknown action: ' + action);
     return json({ ok: true, data: result });
   } catch (err) {
@@ -310,6 +311,70 @@ function setPriority(body) {
   logTx(loc.id, loc.name, p > 0 ? 'ORDER-ADD' : 'ORDER-REMOVE', 0, bottles, bottles,
     body.user, body.remarks || ('Reorder priority set to ' + p), 0);
   return { id: loc.id, priority: p };
+}
+
+/**
+ * Append-only bulk import (v4.5). SAFETY: never overwrites an existing row —
+ * a record whose ID already exists, or whose Name+Potency+Pack already matches
+ * an active medicine, is skipped. Missing IDs are auto-generated. Existing
+ * stock, history and IDs are left completely untouched.
+ * body.rows: [{ name, pack?, potency?, category?, bottles?, ml?, priority?,
+ *               supplier1?, cost1?, supplier2?, cost2?, mfd?, expiry?, remarks?, id? }]
+ * Returns { added, skipped, ids: [...] }.
+ */
+function importMedicines(body) {
+  var rows = body.rows;
+  if (!rows || !rows.length) throw new Error('No rows to import');
+  if (rows.length > 2000) throw new Error('Too many rows in one import (max 2000)');
+  var sh = sheet(INVENTORY_SHEET);
+  var existing = getInventory();
+
+  function idKey(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+  function nk(s) { return String(s == null ? '' : s).toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function comboKey(r) { return nk(r.name) + '|' + nk(r.potency) + '|' + nk(r.pack); }
+
+  var haveId = {}, haveCombo = {}, maxNum = 0;
+  existing.forEach(function (m) {
+    haveId[idKey(m.id)] = true;
+    haveCombo[comboKey(m)] = true;
+    var mm = String(m.id).match(/(\d+)\s*$/);
+    if (mm) maxNum = Math.max(maxNum, Number(mm[1]));
+  });
+
+  var cols = Math.max(20, sh.getLastColumn());
+  var added = 0, skipped = 0, ids = [];
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i] || {};
+    if (!r.name || String(r.name).trim() === '') { skipped++; continue; }
+    var rid = idKey(r.id);
+    if (rid && haveId[rid]) { skipped++; continue; }          // never overwrite an existing ID
+    if (haveCombo[comboKey(r)]) { skipped++; continue; }       // name+potency+pack already present
+
+    var id = rid || ('GEN' + ('000' + (++maxNum)).slice(-4));
+    var rowArr = new Array(cols).fill('');
+    rowArr[COL.ID - 1] = id;
+    rowArr[COL.NAME - 1] = String(r.name).trim();
+    rowArr[COL.PACK - 1] = str(r.pack);
+    rowArr[COL.POTENCY - 1] = str(r.potency);
+    rowArr[COL.CATEGORY - 1] = str(r.category);
+    rowArr[COL.BOTTLES - 1] = r.bottles === '' || r.bottles == null ? '' : num(r.bottles);
+    rowArr[COL.ML - 1] = r.ml === '' || r.ml == null ? '' : num(r.ml);
+    rowArr[COL.PRIORITY - 1] = r.priority === '' || r.priority == null ? 0 : num(r.priority);
+    rowArr[COL.SUP1 - 1] = str(r.supplier1);
+    rowArr[COL.COST1 - 1] = r.cost1 === '' || r.cost1 == null ? '' : num(r.cost1);
+    rowArr[COL.SUP2 - 1] = str(r.supplier2);
+    rowArr[COL.COST2 - 1] = r.cost2 === '' || r.cost2 == null ? '' : num(r.cost2);
+    rowArr[COL.MFD - 1] = str(r.mfd);
+    rowArr[COL.EXPIRY - 1] = str(r.expiry);
+    rowArr[COL.UPDATED - 1] = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');
+    rowArr[COL.ACTIVE - 1] = 'YES';
+    rowArr[COL.REMARKS - 1] = str(r.remarks) || 'Imported ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    sh.appendRow(rowArr);
+    haveId[idKey(id)] = true; haveCombo[comboKey(r)] = true;
+    added++; ids.push(id);
+    logTx(id, String(r.name).trim(), 'IMPORT', num(r.bottles), 0, num(r.bottles), body.user, 'Bulk import', 0);
+  }
+  return { added: added, skipped: skipped, ids: ids };
 }
 
 // ==================== HELPERS ====================
