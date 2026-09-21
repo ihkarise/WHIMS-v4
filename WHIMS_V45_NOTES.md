@@ -80,16 +80,15 @@ Coverage maps to the acceptance matrix (§36–37 of the brief):
 
 ## E. RBAC
 
-- **RBAC did not exist in this codebase** (the backend has login + 6-hour session
-  tokens, but no ADMIN/OPERATOR/VIEWER roles anywhere in `Code.gs` or the
-  frontend). Nothing was removed.
-- All new **write** paths reuse the existing authenticated `apiPost` flow, so
-  they are already gated by login/session exactly like receive/dispense/adjust.
-  Read-only features (search, variants, weekly panel) add no new privileges.
-- A proper role model (ADMIN/OPERATOR/VIEWER) is **recommended future work** and
-  is listed in §H. It was intentionally **not fabricated** here because it would
-  need backend user-role storage and can't be verified without the live Apps
-  Script — and the brief says not to guess in security situations.
+- **RBAC is now implemented** (added after this notes file's original feature
+  phase). Full server-side roles MASTER_ADMIN / ADMIN / OPERATOR / VIEWER, a
+  two-tier admin model, a frontend User Management panel, strict numeric
+  validation, and ADMIN-only append-only import.
+- See **`WHIMS_V45_ARCHITECTURE.md`** for the complete role hierarchy,
+  permission matrix, master-admin protection, migration and password-security
+  mechanisms, and the backend/authorization test coverage (76 direct-API
+  assertions in `whims-rbac.test.js`).
+- Legacy accounts default to OPERATOR without being invalidated (`MIGRATE_ROLES`).
 
 ## F. Performance checklist (which items apply to this static + Apps Script app)
 
