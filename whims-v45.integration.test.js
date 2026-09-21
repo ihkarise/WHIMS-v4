@@ -31,7 +31,7 @@ window.requestAnimationFrame = cb => setTimeout(cb, 0);
 
 const SCRIPTS = ['whims-v45.js', 'app.js', 'whims-core.js', 'whims-v41.js', 'whims-source.js',
   'whims-dashboard.js', 'source-analytics-fix.js', 'whims-workflow.js', 'whims-orders.js',
-  'whims-intake.js', 'whims-ai.js', 'whims-v45-ui.js'];
+  'whims-intake.js', 'whims-ai.js', 'whims-v45-ui.js', 'whims-users.js'];
 const vm = require('vm');
 const ctx = dom.getInternalVMContext();
 SCRIPTS.forEach(f => {
@@ -70,6 +70,20 @@ setTimeout(() => {
   check('F receive total ₹450.00', t.textContent === '₹450.00');
   const p = window.WHIMSv45UI.parseDelimited('Medicine,Potency,Pack,Qty\nARNICA,30,15 ML,4\n"BIG, NAME",200,30 ML,2');
   check('C CSV quoted comma', p.rows[1].Medicine === 'BIG, NAME');
+
+  // User Management panel: RBAC-gated visibility + no MASTER_ADMIN option
+  check('Users module present', !!window.WHIMSUsers);
+  window.setRole('OPERATOR');
+  check('panel hidden for OPERATOR', !d.getElementById('v45Users') || d.getElementById('v45Users').style.display === 'none');
+  window.setRole('VIEWER');
+  check('panel hidden for VIEWER', !d.getElementById('v45Users') || d.getElementById('v45Users').style.display === 'none');
+  window.setRole('ADMIN');
+  const uc = d.getElementById('v45Users');
+  check('panel shown for ADMIN', !!uc && uc.style.display !== 'none' && /User Management/.test(uc.textContent));
+  check('ADMIN assignable roles = OPERATOR,VIEWER (no ADMIN/MASTER)', window.WHIMSUsers._assignableRoles().join(',') === 'OPERATOR,VIEWER');
+  window.setRole('MASTER_ADMIN');
+  check('MASTER assignable roles = ADMIN,OPERATOR,VIEWER (never MASTER)', window.WHIMSUsers._assignableRoles().join(',') === 'ADMIN,OPERATOR,VIEWER');
+  check('nobody can manage a MASTER_ADMIN target from UI', window.WHIMSUsers._canManage('MASTER_ADMIN') === false);
 
   console.log('\nWHIMS v4.5 integration: ' + pass + ' passed, ' + fail + ' failed');
   process.exit(fail ? 1 : 0);

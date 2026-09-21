@@ -101,6 +101,31 @@
 .v45-imp-table tr.v45-imp-duplicate td:last-child{color:var(--amber-deep);font-weight:600}
 .v45-imp-table tr.v45-imp-invalid td:last-child{color:var(--red);font-weight:600}
 
+/* ---- User Management panel ---- */
+.v45-u-table{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.v45-u-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.v45-u-row:last-child{border-bottom:none}
+.v45-u-main{flex:1;min-width:180px}
+.v45-u-main b{font-size:14px;color:var(--ink)}
+.v45-u-dn{font-size:12px;color:var(--muted);font-weight:500}
+.v45-u-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.v45-u-active{color:var(--green);font-weight:600}
+.v45-u-inactive{color:var(--red);font-weight:600}
+.v45-u-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.v45-ubtn{font-size:11.5px;font-weight:600;color:var(--navy);background:rgba(42,60,120,.09);
+  border:1px solid rgba(42,60,120,.2);padding:6px 11px;border-radius:99px}
+.v45-ubtn.danger{color:#fff;background:linear-gradient(135deg,var(--red),var(--red-deep));border:none}
+.v45-u-locked{font-size:11.5px;color:var(--muted)}
+.v45-rolebadge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;
+  text-transform:uppercase;letter-spacing:.04em}
+.v45-role-MASTER_ADMIN{background:#2A1A4A;color:#fff}
+.v45-role-ADMIN{background:var(--navy);color:#fff}
+.v45-role-OPERATOR{background:var(--blue-soft);color:var(--navy);border:1px solid rgba(42,60,120,.2)}
+.v45-role-VIEWER{background:#EEE;color:#555}
+.v45-u-addwrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.v45-u-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.v45-u-form .v45-btn{align-self:flex-start}
+
 /* ---- Dark theme parity (v4.1 sets data-theme="dark") ---- */
 :root[data-theme="dark"] .v45-suggest{background:rgba(24,32,60,.94)}
 :root[data-theme="dark"] .v45-sug-item{color:#E8ECF7}

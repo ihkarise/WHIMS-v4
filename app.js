@@ -21,6 +21,14 @@ let dispenseQty = 1;
 let filter = 'all';
 const API = () => (store.get('api', '') || 'https://script.google.com/macros/s/AKfycbzsELTUHPOBqZ9H2uILDvGGD0GsdiglJAVcJGFIMDt5kU7EmlQkMzsIZrew93UuiB_RCA/exec').trim();
 const USER = () => store.get('user', 'Staff');
+/* Effective role is a UI-only hint mirrored from the server. Every privileged
+   action is still authorized server-side — never trust this value for security. */
+const ROLE = () => String(store.get('role', '') || '').toUpperCase();
+function setRole(role){
+  store.set('role', String(role || '').toUpperCase());
+  try { document.dispatchEvent(new CustomEvent('whims:auth', { detail: { user: USER(), role: ROLE() } })); } catch(e){}
+}
+window.whimsRole = ROLE;
 
 /* ---------- session (token comes from backend login — no secrets live in this file) ---------- */
 const TOKEN = () => store.get('token', '');
@@ -38,7 +46,16 @@ function hideLogin(){ $('#loginScreen').classList.remove('open'); }
 function authFailed(message){
   // any expired/invalid session lands here → back to the login screen
   setSession('', null);
+  store.set('role', '');
   showLogin(message || 'Session expired — please log in again');
+}
+/* Refresh the effective role from the server (source of truth) after a reload. */
+async function refreshRole(){
+  if (!API() || !TOKEN()) return;
+  try {
+    const me = await apiGet('me');
+    if (me && me.role){ setRole(me.role); $('#whoAmI').textContent = 'Logged in as: ' + USER() + ' · ' + ROLE(); }
+  } catch(e){ /* apiGet already handles auth failures */ }
 }
 
 /* ---------- status logic (mirrors sheet formula) ---------- */
@@ -645,10 +662,11 @@ async function doLogin(){
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'Login failed');
     setSession(j.data.token, j.data.user);
+    setRole(j.data.role);
     $('#loginPass').value = '';
     hideLogin();
     toast('Welcome, ' + j.data.user + ' ✓ (session ' + j.data.hours + 'h)');
-    $('#whoAmI').textContent = 'Logged in as: ' + j.data.user;
+    $('#whoAmI').textContent = 'Logged in as: ' + j.data.user + (j.data.role ? ' · ' + String(j.data.role).toUpperCase() : '');
     loadAll(true);
   } catch(e){
     $('#loginErr').textContent = e.message;
@@ -662,6 +680,7 @@ async function doLogin(){
   if (!confirm('Log out of WHIMS?')) return;
   try { if (API() && TOKEN()) await fetch(API(), { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'logout', token: TOKEN() }) }); } catch(e){}
   setSession('', null);
+  setRole('');
   showLogin('Logged out');
 };
 
@@ -670,8 +689,9 @@ function renderAll(){ renderDash(); renderResults(); renderOrders(); renderTx();
 setSync(false);
 renderAll();
 if (TOKEN()){
-  $('#whoAmI').textContent = 'Logged in as: ' + USER();
+  $('#whoAmI').textContent = 'Logged in as: ' + USER() + (ROLE() ? ' · ' + ROLE() : '');
   loadAll(false);          // if the session died, authFailed() pops the login screen
+  refreshRole();           // re-resolve role from the server (source of truth)
 } else {
   showLogin();
 }
