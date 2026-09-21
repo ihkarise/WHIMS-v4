@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="whims-dashboard.css">
 <link rel="stylesheet" href="whims-intake.css">
 <link rel="stylesheet" href="whims-ai.css">
+<link rel="stylesheet" href="whims-v45.css">
 
   
 <style>
@@ -575,6 +576,9 @@ nav button:focus-visible{outline:2px solid #fff}
 
 <div id="toast" role="status"></div>
  
+<!-- v4.5 smart-inventory logic library (pure, tested) — load before app so runtime handlers can use it -->
+<script src="whims-v45.js"></script>
+
 <script src="app.js"></script>
 
 <!-- Core -->
@@ -593,7 +597,10 @@ nav button:focus-visible{outline:2px solid #fff}
 <script src="whims-orders.js"></script>
 <script src="whims-intake.js"></script>
 <script src="whims-ai.js"></script>
-  
+
+<!-- v4.5 UI wiring — loads LAST so its additive wraps compose over every module -->
+<script src="whims-v45-ui.js"></script>
+
 
 <script>
 /**

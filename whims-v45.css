@@ -1,0 +1,109 @@
+/* WHIMS v4.5 — styles for smart search, variants, weekly panel,
+   receiving total, order quantity, suppliers and import. Uses the
+   existing design tokens (--navy, --red, --glass, etc.). */
+
+/* ---- A · Autosuggest dropdown ---- */
+.v45-suggest{display:none;position:relative;z-index:35;margin:2px 0 0;
+  border-radius:var(--radius-sm);overflow:hidden;
+  background:var(--glass-strong);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+.v45-suggest.open{display:block}
+.v45-sug-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:10px 13px;border-bottom:1px solid var(--line);background:none;color:var(--ink)}
+.v45-sug-item:last-child{border-bottom:none}
+.v45-sug-item:hover,.v45-sug-item:focus-visible{background:rgba(42,60,120,.08)}
+.v45-sug-name{flex:1;min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v45-sug-sub{flex:none;font-size:11.5px;color:var(--muted)}
+.v45-sug-stock{flex:none;font-family:'Poppins';font-weight:700;font-size:12px;color:var(--navy)}
+.v45-sug-tag{margin-left:7px;font-size:10px;font-weight:700;color:var(--amber-deep);
+  background:var(--amber-soft);padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
+.v45-fuzzy-note{font-size:12.5px;font-weight:600;color:var(--amber-deep);margin:2px 4px 8px}
+
+/* ---- B/G · Detail sheet sections ---- */
+.v45-section{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}
+.v45-sec-title{font-family:'Poppins';font-weight:700;font-size:12px;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--navy);margin-bottom:9px}
+.v45-var-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:8px 0 6px}
+.v45-var-row{display:flex;flex-wrap:wrap;gap:7px}
+.v45-var{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
+  padding:7px 12px;border-radius:99px;color:var(--navy);
+  background:rgba(42,60,120,.08);border:1px solid rgba(42,60,120,.2)}
+.v45-var em{font-style:normal;font-family:'Poppins';font-weight:700;font-size:11px;color:var(--muted)}
+.v45-var.v45-var-out{color:var(--red);background:var(--red-soft);border-color:rgba(194,31,53,.25)}
+.v45-var.v45-var-out em{color:var(--red)}
+.v45-var-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* ---- G · Supplier rows ---- */
+.v45-sup-row{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.v45-sup-nm{font-weight:600;font-size:13.5px;flex:none}
+.v45-sup-nums{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.v45-wa{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;text-decoration:none;
+  padding:6px 11px;border-radius:99px;color:#fff;background:linear-gradient(135deg,#27B374,var(--green));
+  box-shadow:0 3px 8px rgba(30,142,90,.25)}
+.v45-wa-bad{background:#EEE;color:#888;box-shadow:none}
+.v45-nomum{font-size:11.5px;color:var(--muted)}
+.v45-sup-del{flex:none;width:26px;height:26px;border-radius:50%;color:var(--red);
+  background:var(--red-soft);border:1px solid rgba(194,31,53,.22);font-size:15px;font-weight:700}
+.v45-sup-add{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.v45-in{flex:1;min-width:120px;padding:9px 11px;border:1.5px solid var(--line);
+  border-radius:var(--radius-sm);background:rgba(255,255,255,.82);font-size:13.5px}
+.v45-btn{flex:none;font-family:'Poppins';font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em;
+  color:#fff;background:linear-gradient(135deg,var(--navy),var(--navy-2));padding:9px 16px;border-radius:var(--radius-sm)}
+
+/* ---- E · Weekly dispensing ---- */
+.v45-wk-card{padding:14px 16px}
+.v45-wk-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;
+  font-size:12px;color:var(--muted)}
+.v45-wk-head b{font-family:'Poppins';font-size:14px;color:var(--navy)}
+.v45-wk-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--line)}
+.v45-wk-row:last-child{border-bottom:none}
+.v45-wk-nm{flex:1;min-width:0;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v45-wk-q{flex:none;font-family:'Poppins';font-weight:700;font-size:16px;color:var(--navy)}
+.v45-wk-q em{font-style:normal;font-family:'Inter';font-weight:500;font-size:11px;color:var(--muted)}
+.v45-wk-more{font-size:11.5px;color:var(--muted);padding-top:9px;text-align:center}
+
+/* ---- F · Receiving total ---- */
+.v45-total-row{display:flex;align-items:baseline;gap:10px;margin:10px 0 2px;padding:11px 13px;
+  border-radius:var(--radius-sm);background:var(--green-soft);border:1px solid rgba(30,142,90,.2);
+  font-size:12.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.v45-total-row b{font-family:'Poppins';font-size:20px;color:var(--green);letter-spacing:0}
+.v45-total-note{margin-left:auto;font-size:10.5px;font-weight:500;text-transform:none;letter-spacing:0}
+
+/* ---- D · Order quantity stepper ---- */
+.v45-qty{display:flex;align-items:center;gap:2px;flex:none}
+.v45-qbtn{width:28px;height:28px;border-radius:8px;font-family:'Poppins';font-weight:800;font-size:16px;
+  line-height:1;color:var(--navy);background:rgba(42,60,120,.1);border:1px solid rgba(42,60,120,.2)}
+.v45-qin{width:40px;text-align:center;padding:5px 2px;font-family:'Poppins';font-weight:700;font-size:14px;
+  border:1.5px solid var(--line);border-radius:8px;background:rgba(255,255,255,.85);color:var(--navy)}
+.v45-qin::-webkit-outer-spin-button,.v45-qin::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+/* ---- C · Import ---- */
+#v45Import textarea{width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);
+  padding:11px 13px;font-family:'Inter';font-size:13px;background:rgba(255,255,255,.82);color:var(--ink);resize:vertical}
+.v45-map{font-size:11.5px;color:var(--muted);margin:12px 0 8px;line-height:1.6}
+.v45-map b{color:var(--navy)}
+.v45-imp-badges{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px}
+.v45-imp-b{display:inline-flex;flex-direction:column;align-items:center;min-width:62px;
+  padding:7px 10px;border-radius:var(--radius-sm);font-size:10px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.04em;background:rgba(255,255,255,.7);border:1px solid var(--line)}
+.v45-imp-b b{font-family:'Poppins';font-size:18px;color:var(--navy);letter-spacing:0}
+.v45-imp-b.v45-imp-new b{color:var(--green)}
+.v45-imp-b.v45-imp-existing b{color:var(--navy)}
+.v45-imp-b.v45-imp-duplicate b{color:var(--amber)}
+.v45-imp-b.v45-imp-invalid b{color:var(--red)}
+.v45-imp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.v45-imp-table th,.v45-imp-table td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.v45-imp-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.v45-imp-table td em{font-style:normal;color:var(--red);font-size:10.5px}
+.v45-imp-table tr.v45-imp-new td:last-child{color:var(--green);font-weight:600}
+.v45-imp-table tr.v45-imp-existing td:last-child{color:var(--navy);font-weight:600}
+.v45-imp-table tr.v45-imp-duplicate td:last-child{color:var(--amber-deep);font-weight:600}
+.v45-imp-table tr.v45-imp-invalid td:last-child{color:var(--red);font-weight:600}
+
+/* ---- Dark theme parity (v4.1 sets data-theme="dark") ---- */
+:root[data-theme="dark"] .v45-suggest{background:rgba(24,32,60,.94)}
+:root[data-theme="dark"] .v45-sug-item{color:#E8ECF7}
+:root[data-theme="dark"] .v45-in,
+:root[data-theme="dark"] #v45Import textarea,
+:root[data-theme="dark"] .v45-qin{background:rgba(24,32,60,.7);color:#E8ECF7}
